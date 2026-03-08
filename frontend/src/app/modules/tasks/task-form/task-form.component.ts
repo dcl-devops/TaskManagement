@@ -107,7 +107,7 @@ export class TaskFormComponent implements OnInit {
         this.toast.success(this.editId ? 'Task updated' : 'Task created');
         this.router.navigate(['/tasks', task.id]);
       },
-      error: (err) => { this.toast.error(err.error?.message || 'Save failed'); this.saving = false; }
+      error: (err) => { this.toast.error(err.error?.message || 'Save failed'); this.saving = false; this.cdr.detectChanges(); }
     });
   }
 

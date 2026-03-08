@@ -44,7 +44,7 @@ export class TaskListComponent implements OnInit {
   togglePin(task: any, event: Event): void {
     event.stopPropagation();
     this.http.patch(`/api/tasks/${task.id}/pin`, {}).subscribe({
-      next: (r: any) => { task.is_pinned = r.is_pinned; this.loadTasks(); }
+      next: (r: any) => { task.is_pinned = r.is_pinned; this.loadTasks(); this.cdr.detectChanges(); }
     });
   }
 

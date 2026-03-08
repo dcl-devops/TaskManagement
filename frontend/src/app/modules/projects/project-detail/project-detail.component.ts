@@ -27,7 +27,7 @@ export class ProjectDetailComponent implements OnInit {
   get projId(): number { return this.route.snapshot.params['id']; }
   addUpdate(): void {
     if (!this.newRemark.trim()) return;
-    this.http.post<any>(`/api/projects/${this.projId}/updates`, { remark: this.newRemark }).subscribe({ next: r => { this.updates.unshift(r); this.newRemark = ''; } });
+    this.http.post<any>(`/api/projects/${this.projId}/updates`, { remark: this.newRemark }).subscribe({ next: r => { this.updates.unshift(r); this.newRemark = ''; this.cdr.detectChanges(); } });
   }
   getProgress(): number { return this.project?.total_tasks > 0 ? Math.round((this.project.completed_tasks / this.project.total_tasks) * 100) : 0; }
   formatDate(d: string): string { return d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'; }

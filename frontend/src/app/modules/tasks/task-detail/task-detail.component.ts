@@ -72,7 +72,7 @@ export class TaskDetailComponent implements OnInit {
     this.savingComment = true;
     this.http.post<any>(`/api/tasks/${this.taskId}/comments`, { comment: this.newComment }).subscribe({
       next: c => { this.comments.push(c); this.newComment = ''; this.savingComment = false; this.cdr.detectChanges(); },
-      error: () => this.savingComment = false
+      error: () => { this.savingComment = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -85,7 +85,7 @@ export class TaskDetailComponent implements OnInit {
     this.uploadingFile = true;
     this.http.post<any>(`/api/tasks/${this.taskId}/attachments`, formData).subscribe({
       next: a => { this.attachments.unshift(a); this.toast.success('File uploaded'); this.uploadingFile = false; this.cdr.detectChanges(); },
-      error: (err) => { this.toast.error(err.error?.message || 'Upload failed'); this.uploadingFile = false; }
+      error: (err) => { this.toast.error(err.error?.message || 'Upload failed'); this.uploadingFile = false; this.cdr.detectChanges(); }
     });
   }
 

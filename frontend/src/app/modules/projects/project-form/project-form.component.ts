@@ -72,6 +72,6 @@ export class ProjectFormComponent implements OnInit {
     this.saving = true;
     const payload = { ...this.form.value, member_ids: this.selectedMembers.map(m => m.user_id) };
     const req = this.editId ? this.http.put<any>(`/api/projects/${this.editId}`, payload) : this.http.post<any>('/api/projects', payload);
-    req.subscribe({ next: r => { this.toast.success('Project saved'); this.router.navigate(['/projects', r.id]); }, error: (e) => { this.toast.error(e.error?.message || 'Save failed'); this.saving = false; } });
+    req.subscribe({ next: r => { this.toast.success('Project saved'); this.router.navigate(['/projects', r.id]); }, error: (e) => { this.toast.error(e.error?.message || 'Save failed'); this.saving = false; this.cdr.detectChanges(); } });
   }
 }

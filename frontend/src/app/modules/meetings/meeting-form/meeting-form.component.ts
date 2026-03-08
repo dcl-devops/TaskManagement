@@ -64,7 +64,7 @@ export class MeetingFormComponent implements OnInit {
       : this.http.post<any>('/api/meetings', payload);
     req.subscribe({
       next: (r) => { this.toast.success(this.editId ? 'Meeting updated' : 'Meeting created'); this.router.navigate(['/meetings', r.id]); },
-      error: (err) => { this.toast.error(err.error?.message || 'Save failed'); this.saving = false; }
+      error: (err) => { this.toast.error(err.error?.message || 'Save failed'); this.saving = false; this.cdr.detectChanges(); }
     });
   }
 }

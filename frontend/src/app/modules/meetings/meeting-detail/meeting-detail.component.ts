@@ -35,14 +35,14 @@ export class MeetingDetailComponent implements OnInit {
   addUpdate(): void {
     if (!this.newRemark.trim()) return;
     this.http.post<any>(`/api/meetings/${this.meetingId}/updates`, { remark: this.newRemark }).subscribe({
-      next: r => { this.updates.unshift(r); this.newRemark = ''; this.toast.success('Update added'); }
+      next: r => { this.updates.unshift(r); this.newRemark = ''; this.toast.success('Update added'); this.cdr.detectChanges(); }
     });
   }
 
   addMom(): void {
     if (!this.newMom.trim()) return;
     this.http.post<any>(`/api/meetings/${this.meetingId}/mom`, { content: this.newMom }).subscribe({
-      next: r => { this.moms.unshift(r); this.newMom = ''; this.toast.success('MOM added'); }
+      next: r => { this.moms.unshift(r); this.newMom = ''; this.toast.success('MOM added'); this.cdr.detectChanges(); }
     });
   }
 

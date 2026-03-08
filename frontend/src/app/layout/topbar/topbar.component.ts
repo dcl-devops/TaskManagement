@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { ThemeService } from '../../core/theme.service';
@@ -25,7 +25,8 @@ export class TopbarComponent implements OnInit, OnDestroy {
     public auth: AuthService,
     private theme: ThemeService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -38,7 +39,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
 
   loadNotifications(): void {
     this.http.get<any>('/api/notifications/unread-count').subscribe({
-      next: r => this.unreadCount = r.count,
+      next: r => { this.unreadCount = r.count; this.cdr.detectChanges(); },
       error: () => {}
     });
   }
@@ -48,7 +49,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
     this.showUserMenu = false;
     if (this.showNotifications) {
       this.http.get<any[]>('/api/notifications').subscribe({
-        next: r => this.notifications = r,
+        next: r => { this.notifications = r; this.cdr.detectChanges(); },
         error: () => {}
       });
     }
@@ -58,6 +59,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
     this.http.patch('/api/notifications/read-all', {}).subscribe(() => {
       this.unreadCount = 0;
       this.notifications.forEach(n => n.is_read = true);
+      this.cdr.detectChanges();
     });
   }
 

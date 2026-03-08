@@ -99,8 +99,9 @@ export class UsersComponent implements OnInit {
         this.load();
         this.loadDropdowns();
         this.saving = false;
+        this.cdr.detectChanges();
       },
-      error: (err) => { this.toast.error(err.error?.message || 'Save failed'); this.saving = false; }
+      error: (err) => { this.toast.error(err.error?.message || 'Save failed'); this.saving = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -116,7 +117,7 @@ export class UsersComponent implements OnInit {
   toggleStatus(user: any): void {
     const newStatus = user.status === 'active' ? 'inactive' : 'active';
     this.http.put<any>(`/api/admin/users/${user.id}`, { ...user, status: newStatus }).subscribe({
-      next: () => { user.status = newStatus; this.toast.success(`User ${newStatus}`); }
+      next: () => { user.status = newStatus; this.toast.success(`User ${newStatus}`); this.cdr.detectChanges(); }
     });
   }
 }
