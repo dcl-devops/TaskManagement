@@ -43,8 +43,8 @@ export class MasterDataComponent implements OnInit {
     if (!this.newName.trim()) return;
     this.saving = true;
     this.http.post<any>(`/api/admin/${this.activeTab}`, { name: this.newName }).subscribe({
-      next: r => { this.data[this.activeTab].push(r); this.newName = ''; this.showAdd = false; this.saving = false; this.toast.success('Added successfully'); },
-      error: (err) => { this.toast.error(err.error?.message || 'Failed to add'); this.saving = false; }
+      next: r => { this.data[this.activeTab] = [...this.data[this.activeTab], r]; this.newName = ''; this.showAdd = false; this.saving = false; this.toast.success('Added successfully'); this.cdr.detectChanges(); },
+      error: (err) => { this.toast.error(err.error?.message || 'Failed to add'); this.saving = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -53,14 +53,14 @@ export class MasterDataComponent implements OnInit {
   saveEdit(): void {
     if (!this.editName.trim()) return;
     this.http.put<any>(`/api/admin/${this.activeTab}/${this.editItem.id}`, { name: this.editName }).subscribe({
-      next: r => { this.editItem.name = r.name; this.editItem = null; this.toast.success('Updated'); }
+      next: r => { this.editItem.name = r.name; this.editItem = null; this.toast.success('Updated'); this.cdr.detectChanges(); }
     });
   }
 
   deleteItem(item: any): void {
     if (!confirm(`Delete "${item.name}"?`)) return;
     this.http.delete(`/api/admin/${this.activeTab}/${item.id}`).subscribe({
-      next: () => { this.data[this.activeTab] = this.data[this.activeTab].filter(i => i.id !== item.id); this.toast.success('Deleted'); }
+      next: () => { this.data[this.activeTab] = this.data[this.activeTab].filter(i => i.id !== item.id); this.toast.success('Deleted'); this.cdr.detectChanges(); }
     });
   }
 }
