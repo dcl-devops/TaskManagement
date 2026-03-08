@@ -44,8 +44,8 @@
   --status-hold-bg: #fffbeb;
   --status-resolved: #10b981;
   --status-resolved-bg: #ecfdf5;
-  --status-closed: #6b7280;
-  --status-closed-bg: #f9fafb;
+  --status-closed: #10b981;
+  --status-closed-bg: #ecfdf5;
 
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
@@ -90,7 +90,7 @@ body.dark-theme {
   --status-progress-bg: #2e1065;
   --status-hold-bg: #451a03;
   --status-resolved-bg: #064e3b;
-  --status-closed-bg: #1f2937;
+  --status-closed-bg: #064e3b;
 
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
