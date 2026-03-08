@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { Subscription } from 'rxjs';
 
 interface NavItem {
   label: string;
@@ -15,10 +16,11 @@ interface NavItem {
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit, OnDestroy {
   @Input() collapsed = false;
   @Input() mobileOpen = false;
   @Output() toggleCollapse = new EventEmitter<void>();
+  private sub!: Subscription;
 
   navItems: NavItem[] = [
     { label: 'Dashboard', icon: '◼', path: '/dashboard' },
@@ -30,7 +32,12 @@ export class SidebarComponent {
     { label: 'Admin', icon: '⚙', path: '/admin', adminOnly: true }
   ];
 
-  constructor(public auth: AuthService, public router: Router) {}
+  constructor(public auth: AuthService, public router: Router, private cdr: ChangeDetectorRef) {}
+
+  ngOnInit(): void {
+    this.sub = this.auth.currentUser$.subscribe(() => this.cdr.detectChanges());
+  }
+  ngOnDestroy(): void { this.sub?.unsubscribe(); }
 
   get visibleItems(): NavItem[] {
     return this.navItems.filter(item => !item.adminOnly || this.auth.isAdmin());

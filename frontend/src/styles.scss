@@ -38,8 +38,8 @@
 
   --status-open: #3b82f6;
   --status-open-bg: #eff6ff;
-  --status-progress: #ca8a04;
-  --status-progress-bg: #fefce8;
+  --status-progress: #eab308;
+  --status-progress-bg: #fef9c3;
   --status-hold: #f59e0b;
   --status-hold-bg: #fffbeb;
   --status-resolved: #10b981;
@@ -526,8 +526,15 @@ table {
   &.avatar-lg { width: 40px; height: 40px; font-size: 0.875rem; }
   &.avatar-xl { width: 48px; height: 48px; font-size: 1rem; }
   img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-  &.avatar-img { object-fit: cover; background: none; }
+  &.avatar-img { object-fit: cover; background: none; border-radius: 50%; }
 }
+.avatar-upload-hint {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center;
+  background: var(--primary); color: #fff; border-radius: 50%;
+  opacity: 0; transition: opacity 0.15s;
+}
+*:hover > .avatar-upload-hint { opacity: 1; }
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {

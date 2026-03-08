@@ -31,6 +31,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.theme.isDark$.subscribe(v => this.isDark = v);
+    this.auth.currentUser$.subscribe(() => this.cdr.detectChanges());
     this.loadNotifications();
     this.sub = interval(30000).subscribe(() => this.loadNotifications());
   }
@@ -74,6 +75,18 @@ export class TopbarComponent implements OnInit, OnDestroy {
   getUserInitials(): string {
     const name = this.auth.currentUser?.name || '';
     return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  uploadSelfAvatar(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length || !this.auth.currentUser) return;
+    const formData = new FormData();
+    formData.append('avatar', input.files[0]);
+    this.http.post<any>(`/api/admin/users/${this.auth.currentUser.id}/avatar`, formData).subscribe({
+      next: () => { this.auth.refreshMe(); this.cdr.detectChanges(); },
+      error: () => {}
+    });
+    input.value = '';
   }
 
   closeDropdowns(): void {

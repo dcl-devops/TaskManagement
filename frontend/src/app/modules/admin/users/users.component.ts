@@ -127,7 +127,13 @@ export class UsersComponent implements OnInit {
     const formData = new FormData();
     formData.append('avatar', input.files[0]);
     this.http.post<any>(`/api/admin/users/${user.id}/avatar`, formData).subscribe({
-      next: r => { user.avatar_url = r.avatar_url; this.toast.success('Photo uploaded'); this.cdr.detectChanges(); },
+      next: r => {
+        user.avatar_url = r.avatar_url;
+        this.toast.success('Photo uploaded');
+        // Refresh current user if same user
+        if (this.auth.currentUser?.id === user.id) { this.auth.refreshMe(); }
+        this.cdr.detectChanges();
+      },
       error: () => { this.toast.error('Upload failed'); }
     });
     input.value = '';

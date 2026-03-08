@@ -52,8 +52,12 @@
       </button>
       <div class="dropdown user-dropdown" *ngIf="showUserMenu">
         <div class="user-info-header">
-          <img *ngIf="auth.currentUser?.avatar_url" [src]="auth.currentUser?.avatar_url" class="avatar avatar-lg avatar-img" />
-          <div class="avatar avatar-lg" *ngIf="!auth.currentUser?.avatar_url">{{ getUserInitials() }}</div>
+          <div style="position:relative;cursor:pointer;" (click)="avatarInput.click()">
+            <img *ngIf="auth.currentUser?.avatar_url" [src]="auth.currentUser?.avatar_url" class="avatar avatar-lg avatar-img" />
+            <div class="avatar avatar-lg" *ngIf="!auth.currentUser?.avatar_url">{{ getUserInitials() }}</div>
+            <div class="avatar-upload-hint">&#128247;</div>
+            <input #avatarInput type="file" accept="image/*" (change)="uploadSelfAvatar($event)" style="display:none;" />
+          </div>
           <div>
             <div class="font-semibold">{{ auth.currentUser?.name }}</div>
             <div class="text-sm text-muted">{{ auth.currentUser?.email }}</div>
