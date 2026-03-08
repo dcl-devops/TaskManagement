@@ -1,0 +1,75 @@
+<header class="topbar" (click)="$event.stopPropagation()">
+  <div class="topbar-left">
+    <button class="btn btn-ghost btn-icon mobile-menu-btn" (click)="toggleMobileSidebar.emit()" data-testid="mobile-menu-btn">
+      &#9776;
+    </button>
+    <div class="search-wrapper">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search tasks, meetings..." data-testid="global-search" />
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <!-- Quick Create -->
+    <a routerLink="/tasks" [queryParams]="{new: 'true'}" class="btn btn-primary btn-sm" data-testid="quick-create-btn">
+      + New Task
+    </a>
+
+    <!-- Theme Toggle -->
+    <button class="btn btn-ghost btn-icon" (click)="toggleTheme()" [title]="isDark ? 'Switch to light' : 'Switch to dark'" data-testid="theme-toggle">
+      {{ isDark ? '&#9728;' : '&#9790;' }}
+    </button>
+
+    <!-- Notifications -->
+    <div class="dropdown-wrapper">
+      <button class="btn btn-ghost btn-icon notif-btn" (click)="toggleNotifications()" data-testid="notifications-btn">
+        &#128276;
+        <span class="badge-count" *ngIf="unreadCount > 0" data-testid="unread-count">{{ unreadCount }}</span>
+      </button>
+      <div class="dropdown notifications-dropdown" *ngIf="showNotifications">
+        <div class="dropdown-header">
+          <span class="font-semibold">Notifications</span>
+          <button class="btn btn-ghost btn-sm" (click)="markAllRead()" *ngIf="unreadCount > 0">Mark all read</button>
+        </div>
+        <div class="notif-list">
+          <div *ngIf="notifications.length === 0" class="notif-empty">No notifications</div>
+          <div class="notif-item" *ngFor="let n of notifications" [class.unread]="!n.is_read">
+            <div class="notif-dot" *ngIf="!n.is_read"></div>
+            <div class="notif-content">
+              <div class="notif-title">{{ n.title }}</div>
+              <div class="notif-msg text-sm text-muted">{{ n.message }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Menu -->
+    <div class="dropdown-wrapper">
+      <button class="avatar-btn" (click)="toggleUserMenu()" data-testid="user-menu-btn">
+        <div class="avatar">{{ getUserInitials() }}</div>
+      </button>
+      <div class="dropdown user-dropdown" *ngIf="showUserMenu">
+        <div class="user-info-header">
+          <div class="avatar avatar-lg">{{ getUserInitials() }}</div>
+          <div>
+            <div class="font-semibold">{{ auth.currentUser?.name }}</div>
+            <div class="text-sm text-muted">{{ auth.currentUser?.email }}</div>
+            <div class="text-xs text-muted">{{ auth.currentUser?.role | titlecase }}</div>
+          </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="user-org text-sm text-muted" style="padding:0.5rem 1rem;">
+          {{ auth.currentUser?.org_name }}
+        </div>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item" (click)="logout()" data-testid="logout-btn">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Click outside to close -->
+<div class="click-outside" *ngIf="showNotifications || showUserMenu" (click)="closeDropdowns()"></div>

@@ -1,0 +1,45 @@
+<div class="page-header">
+  <h1>Calendar</h1>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-icon" (click)="prevMonth()">&#8592;</button>
+    <span class="month-label">{{ monthYear }}</span>
+    <button class="btn btn-ghost btn-icon" (click)="nextMonth()">&#8594;</button>
+  </div>
+</div>
+
+<div class="calendar-grid-wrap card" style="padding:0;overflow:hidden;">
+  <!-- Day headers -->
+  <div class="cal-header-row">
+    <div *ngFor="let d of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" class="cal-header-cell">{{ d }}</div>
+  </div>
+  <!-- Day cells -->
+  <div class="cal-body">
+    <div *ngFor="let day of calendarDays" class="cal-cell"
+      [class.other-month]="!day.currentMonth"
+      [class.today]="day.isToday"
+      [class.selected]="selectedDay?.date.toDateString() === day.date.toDateString()"
+      (click)="selectDay(day)"
+      [attr.data-testid]="'cal-day-' + day.date.getDate()">
+      <div class="day-num">{{ day.date.getDate() }}</div>
+      <div class="day-events">
+        <div *ngFor="let ev of day.events.slice(0, 3)" class="cal-event" [style.background]="ev.color" (click)="$event.stopPropagation(); openEvent(ev)" [title]="ev.title">
+          {{ ev.title | slice:0:20 }}{{ ev.title?.length > 20 ? '...' : '' }}
+        </div>
+        <div *ngIf="day.events.length > 3" class="more-events">+{{ day.events.length - 3 }} more</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Selected Day Panel -->
+<div class="day-panel card" *ngIf="selectedDay && selectedDay.events.length > 0" style="margin-top:1.5rem;padding:1.25rem;">
+  <h3 style="margin-bottom:1rem;">{{ selectedDay.date.toLocaleDateString('en-IN', { weekday:'long', day:'2-digit', month:'long' }) }}</h3>
+  <div *ngFor="let ev of selectedDay.events" class="day-event-item" (click)="openEvent(ev)" style="cursor:pointer;">
+    <div class="event-dot" [style.background]="ev.color"></div>
+    <div style="flex:1;">
+      <div class="font-medium text-sm">{{ ev.title }}</div>
+      <div class="text-xs text-muted">{{ ev.type | titlecase }}<span *ngIf="ev.assigned_to_name"> &bull; {{ ev.assigned_to_name }}</span></div>
+    </div>
+    <span class="badge" *ngIf="ev.priority" [class]="'badge-' + ev.priority">{{ ev.priority | titlecase }}</span>
+  </div>
+</div>

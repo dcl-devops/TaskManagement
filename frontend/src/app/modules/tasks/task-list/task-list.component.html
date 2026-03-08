@@ -1,0 +1,100 @@
+<div class="page-header">
+  <h1>Task Management</h1>
+  <div class="header-actions">
+    <span class="text-sm text-muted">{{ tasks.length }} tasks</span>
+    <button class="btn btn-primary" (click)="newTask()" data-testid="new-task-btn">+ New Task</button>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card filters-bar">
+  <div class="filter-row">
+    <div class="search-wrapper" style="flex:1;max-width:300px;">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" [(ngModel)]="filters.search" placeholder="Search tasks..." (input)="loadTasks()" data-testid="task-search" />
+    </div>
+    <select [(ngModel)]="filters.status" (change)="loadTasks()" data-testid="filter-status">
+      <option value="">All Status</option>
+      <option value="open">Open</option>
+      <option value="in_progress">In Progress</option>
+      <option value="on_hold">On Hold</option>
+      <option value="resolved">Resolved</option>
+      <option value="closed">Closed</option>
+    </select>
+    <select [(ngModel)]="filters.priority" (change)="loadTasks()" data-testid="filter-priority">
+      <option value="">All Priority</option>
+      <option value="critical">Critical</option>
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+    </select>
+    <select [(ngModel)]="filters.category" (change)="loadTasks()" data-testid="filter-category">
+      <option value="">All Categories</option>
+      <option value="task">Task</option>
+      <option value="subtask">Subtask</option>
+      <option value="meeting">Meeting</option>
+      <option value="project">Project</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" (click)="clearFilters()">Clear</button>
+  </div>
+</div>
+
+<div *ngIf="loading" class="loading-overlay"><div class="spinner"></div></div>
+
+<div class="card table-container" *ngIf="!loading" style="border-radius:var(--radius-lg);">
+  <table data-testid="tasks-table">
+    <thead>
+      <tr>
+        <th style="width:40px;">Pin</th>
+        <th>Task #</th>
+        <th>Title</th>
+        <th>Category</th>
+        <th>Assigned To</th>
+        <th>Assigned By</th>
+        <th>Department</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let task of tasks"
+          (click)="openTask(task.id)"
+          style="cursor:pointer;"
+          [attr.data-testid]="'task-' + task.id">
+        <td (click)="togglePin(task, $event)">
+          <span [style.opacity]="task.is_pinned ? 1 : 0.3" title="Pin task">&#128204;</span>
+        </td>
+        <td class="text-sm text-muted">{{ task.task_number }}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span class="priority-dot" [class]="task.priority"></span>
+            <span class="task-title">{{ task.title }}</span>
+          </div>
+        </td>
+        <td>
+          <span class="badge badge-category">{{ task.category | titlecase }}</span>
+        </td>
+        <td class="text-sm">{{ task.assigned_to_name || '-' }}</td>
+        <td class="text-sm">{{ task.assigned_by_name || '-' }}</td>
+        <td class="text-sm">{{ task.department_name || '-' }}</td>
+        <td><span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | titlecase }}</span></td>
+        <td><span class="badge" [class]="getStatusClass(task.status)">{{ task.status | titlecase }}</span></td>
+        <td class="text-sm" [class.text-danger]="isOverdue(task.due_date, task.status)">
+          {{ formatDate(task.due_date) }}
+        </td>
+        <td class="text-sm text-muted">{{ formatDate(task.updated_at) }}</td>
+      </tr>
+      <tr *ngIf="tasks.length === 0">
+        <td colspan="11">
+          <div class="empty-state">
+            <div class="empty-icon">&#9745;</div>
+            <h3>No tasks found</h3>
+            <p>Create your first task or adjust your filters</p>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

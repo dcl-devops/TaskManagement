@@ -1,0 +1,203 @@
+<div *ngIf="loading" class="loading-overlay"><div class="spinner"></div></div>
+
+<ng-container *ngIf="task && !loading">
+  <!-- Header -->
+  <div class="task-detail-header">
+    <div class="task-header-left">
+      <button class="btn btn-ghost btn-sm" routerLink="/tasks" data-testid="back-btn">&#8592; Back</button>
+      <span class="task-number">{{ task.task_number }}</span>
+      <span class="badge" [class]="'badge-' + task.category">{{ task.category | titlecase }}</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm" (click)="editTask()" data-testid="edit-task-btn">Edit Task</button>
+    </div>
+  </div>
+
+  <div class="task-detail-grid">
+    <!-- Main Content -->
+    <div class="task-main">
+      <!-- Title & Priority -->
+      <div class="card task-title-card">
+        <div class="task-title-row">
+          <span class="priority-dot" [class]="task.priority" style="width:12px;height:12px;"></span>
+          <h2>{{ task.title }}</h2>
+        </div>
+        <div class="task-badges">
+          <span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | titlecase }}</span>
+          <div class="status-dropdown-wrap">
+            <span class="badge" [class]="getStatusClass(task.status)" (click)="showStatusMenu = !showStatusMenu" style="cursor:pointer;" data-testid="status-badge">
+              {{ task.status | titlecase }} &#9660;
+            </span>
+            <div class="status-menu" *ngIf="showStatusMenu">
+              <button *ngFor="let s of statusOptions" (click)="changeStatus(s)" class="status-option" [class.active]="s === task.status">
+                {{ s | titlecase }}
+              </button>
+            </div>
+          </div>
+          <span class="badge" style="background:var(--bg-tertiary);color:var(--text-muted);" *ngIf="isOverdue()">Overdue</span>
+        </div>
+        <div class="task-description" *ngIf="task.description">{{ task.description }}</div>
+        <div class="task-tags" *ngIf="task.tags?.length">
+          <span class="tag" *ngFor="let tag of task.tags">{{ tag }}</span>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="card">
+        <div class="tabs-header">
+          <button class="tab-btn" [class.active]="activeTab === 'comments'" (click)="activeTab='comments'" data-testid="tab-comments">
+            Comments ({{ comments.length }})
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'attachments'" (click)="activeTab='attachments'" data-testid="tab-attachments">
+            Attachments ({{ attachments.length }})
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'subtasks'" (click)="activeTab='subtasks'" data-testid="tab-subtasks">
+            Subtasks ({{ subtasks.length }})
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'activity'" (click)="activeTab='activity'" data-testid="tab-activity">
+            Activity Log
+          </button>
+        </div>
+
+        <!-- Comments -->
+        <div class="tab-content" *ngIf="activeTab === 'comments'">
+          <div class="comments-list">
+            <div class="comment-item" *ngFor="let c of comments">
+              <div class="avatar avatar-sm">{{ getInitials(c.user_name) }}</div>
+              <div class="comment-body">
+                <div class="comment-header">
+                  <span class="font-medium text-sm">{{ c.user_name }}</span>
+                  <span class="text-xs text-muted">{{ formatDateTime(c.created_at) }}</span>
+                </div>
+                <p class="comment-text">{{ c.comment }}</p>
+              </div>
+            </div>
+            <div *ngIf="comments.length === 0" class="empty-state" style="padding:2rem;">
+              <p>No comments yet. Be the first to comment.</p>
+            </div>
+          </div>
+          <div class="comment-input-area">
+            <div class="avatar avatar-sm">{{ getInitials(auth.currentUser?.name || '') }}</div>
+            <div class="comment-input-wrap">
+              <textarea [(ngModel)]="newComment" placeholder="Add a comment..." rows="3" data-testid="comment-input"></textarea>
+              <button class="btn btn-primary btn-sm" (click)="addComment()" [disabled]="savingComment || !newComment.trim()" data-testid="submit-comment">
+                {{ savingComment ? 'Posting...' : 'Post Comment' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attachments -->
+        <div class="tab-content" *ngIf="activeTab === 'attachments'">
+          <div class="attachments-list">
+            <div class="attachment-item" *ngFor="let a of attachments">
+              <span class="file-icon">&#128196;</span>
+              <div class="file-info">
+                <span class="font-medium text-sm">{{ a.original_name || a.filename }}</span>
+                <span class="text-xs text-muted">{{ a.user_name }} &bull; {{ formatDateTime(a.created_at) }}</span>
+              </div>
+              <a [href]="'/uploads/' + a.filename" target="_blank" class="btn btn-ghost btn-sm">Download</a>
+            </div>
+            <div *ngIf="attachments.length === 0" class="empty-state" style="padding:2rem;"><p>No attachments yet</p></div>
+          </div>
+          <div class="upload-area">
+            <label class="btn btn-secondary btn-sm upload-btn">
+              <span *ngIf="uploadingFile" class="spinner" style="width:14px;height:14px;border-width:2px;"></span>
+              {{ uploadingFile ? 'Uploading...' : '+ Upload File' }}
+              <input type="file" style="display:none;" (change)="uploadFile($event)" data-testid="file-upload" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.webp" />
+            </label>
+            <span class="text-xs text-muted">PDF, Word, Excel, PPT, Images (max 10MB)</span>
+          </div>
+        </div>
+
+        <!-- Subtasks -->
+        <div class="tab-content" *ngIf="activeTab === 'subtasks'">
+          <div class="subtasks-list">
+            <div class="subtask-item" *ngFor="let s of subtasks" [routerLink]="['/tasks', s.id]" style="cursor:pointer;">
+              <span class="priority-dot" [class]="s.priority"></span>
+              <span class="text-sm flex-1">{{ s.task_number }} - {{ s.title }}</span>
+              <span class="badge" [class]="getStatusClass(s.status)">{{ s.status | titlecase }}</span>
+            </div>
+            <div *ngIf="subtasks.length === 0" class="empty-state" style="padding:2rem;"><p>No subtasks</p></div>
+          </div>
+          <div style="padding:1rem;">
+            <a [routerLink]="['/tasks/new']" [queryParams]="{parent: taskId, category: 'subtask'}" class="btn btn-secondary btn-sm">+ Add Subtask</a>
+          </div>
+        </div>
+
+        <!-- Activity -->
+        <div class="tab-content" *ngIf="activeTab === 'activity'">
+          <div class="activity-list">
+            <div class="activity-item" *ngFor="let a of activities">
+              <div class="avatar avatar-sm">{{ getInitials(a.user_name) }}</div>
+              <div class="activity-body">
+                <span class="font-medium text-sm">{{ a.user_name }}</span>
+                <span class="text-sm text-secondary"> {{ a.action }}</span>
+                <span *ngIf="a.old_value" class="text-xs text-muted"> from <em>{{ a.old_value }}</em></span>
+                <span *ngIf="a.new_value" class="text-xs text-muted"> to <em>{{ a.new_value }}</em></span>
+                <div class="text-xs text-muted">{{ formatDateTime(a.created_at) }}</div>
+              </div>
+            </div>
+            <div *ngIf="activities.length === 0" class="empty-state" style="padding:2rem;"><p>No activity yet</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="task-sidebar">
+      <div class="card">
+        <div class="detail-header">Details</div>
+        <div class="detail-list">
+          <div class="detail-row">
+            <span class="detail-label">Assigned To</span>
+            <div class="detail-value">
+              <div class="avatar avatar-sm">{{ getInitials(task.assigned_to_name) }}</div>
+              {{ task.assigned_to_name || '-' }}
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Assigned By</span>
+            <span class="detail-value">{{ task.assigned_by_name || '-' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Department</span>
+            <span class="detail-value">{{ task.department_name || '-' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Location</span>
+            <span class="detail-value">{{ task.location_name || '-' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Start Date</span>
+            <span class="detail-value">{{ formatDate(task.start_date) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Due Date</span>
+            <span class="detail-value" [class.text-danger]="isOverdue()">{{ formatDate(task.due_date) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="task.estimated_effort">
+            <span class="detail-label">Est. Effort</span>
+            <span class="detail-value">{{ task.estimated_effort }}h</span>
+          </div>
+          <div class="detail-row" *ngIf="task.meeting_title">
+            <span class="detail-label">Meeting</span>
+            <span class="detail-value">{{ task.meeting_title }}</span>
+          </div>
+          <div class="detail-row" *ngIf="task.project_title">
+            <span class="detail-label">Project</span>
+            <span class="detail-value">{{ task.project_title }}</span>
+          </div>
+          <div class="detail-row" *ngIf="task.parent_task_title">
+            <span class="detail-label">Parent Task</span>
+            <a [routerLink]="['/tasks', task.parent_task_id]" class="detail-value" style="color:var(--accent-blue);">{{ task.parent_task_title }}</a>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Created By</span>
+            <span class="detail-value">{{ task.created_by_name || '-' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

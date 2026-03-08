@@ -1,0 +1,11 @@
+.projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+.project-card { padding: 1.25rem; &:hover { transform: translateY(-2px); border-color: var(--accent-blue); } }
+.project-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+.project-num { font-size: .8125rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+.project-title { font-size: 1rem; font-weight: 600; margin-bottom: .625rem; }
+.project-meta { display: flex; justify-content: space-between; margin-bottom: .875rem; }
+.progress-wrap { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; }
+.progress-bar-bg { flex: 1; height: 6px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--accent-blue); border-radius: 3px; transition: width .5s ease; }
+.progress-text { width: 36px; text-align: right; font-weight: 600; }
+.project-footer { border-top: 1px solid var(--border-color); padding-top: .75rem; }

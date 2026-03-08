@@ -1,0 +1,38 @@
+<div class="page-header">
+  <h1>Master Data</h1>
+  <button class="btn btn-primary" (click)="showAdd = !showAdd" data-testid="add-master-btn">+ Add {{ activeTab | titlecase | slice:0:-1 }}</button>
+</div>
+
+<div class="tabs-header" style="margin-bottom:1.5rem;background:var(--bg-card);border-radius:var(--radius-lg);border:1px solid var(--border-color);overflow:hidden;">
+  <button *ngFor="let tab of tabs" class="tab-btn" [class.active]="activeTab === tab.key" (click)="activeTab = tab.key" [attr.data-testid]="'tab-' + tab.key">
+    <span [innerHTML]="tab.icon"></span> {{ tab.label }} ({{ data[tab.key].length }})
+  </button>
+</div>
+
+<div class="card" style="padding:1.5rem;">
+  <!-- Add Form -->
+  <div *ngIf="showAdd" style="display:flex;gap:1rem;margin-bottom:1.5rem;padding:1rem;background:var(--bg-secondary);border-radius:var(--radius);">
+    <input type="text" [(ngModel)]="newName" [placeholder]="'Enter ' + activeTab.slice(0,-1) + ' name'" style="flex:1;" (keydown.enter)="addItem()" data-testid="new-master-name" />
+    <button class="btn btn-primary btn-sm" (click)="addItem()" [disabled]="saving || !newName.trim()" data-testid="save-master-btn">{{ saving ? 'Adding...' : 'Add' }}</button>
+    <button class="btn btn-secondary btn-sm" (click)="showAdd=false;newName=''">Cancel</button>
+  </div>
+
+  <!-- List -->
+  <div class="master-list">
+    <div *ngFor="let item of items" class="master-item">
+      <div *ngIf="editItem?.id !== item.id" style="display:flex;align-items:center;justify-content:space-between;">
+        <span class="font-medium">{{ item.name }}</span>
+        <div style="display:flex;gap:.5rem;">
+          <button class="btn btn-ghost btn-sm btn-icon" (click)="startEdit(item)" data-testid="edit-master-btn">&#9998;</button>
+          <button class="btn btn-ghost btn-sm btn-icon" (click)="deleteItem(item)" style="color:#ef4444;" data-testid="delete-master-btn">&#128465;</button>
+        </div>
+      </div>
+      <div *ngIf="editItem?.id === item.id" style="display:flex;gap:.75rem;align-items:center;">
+        <input type="text" [(ngModel)]="editName" style="flex:1;" data-testid="edit-master-name" />
+        <button class="btn btn-primary btn-sm" (click)="saveEdit()">Save</button>
+        <button class="btn btn-secondary btn-sm" (click)="editItem=null">Cancel</button>
+      </div>
+    </div>
+    <div *ngIf="items.length === 0" class="empty-state" style="padding:2rem;"><p>No {{ activeTab }} added yet. Click "+ Add" to create one.</p></div>
+  </div>
+</div>

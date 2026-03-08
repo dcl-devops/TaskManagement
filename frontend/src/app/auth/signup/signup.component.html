@@ -1,0 +1,67 @@
+<div class="auth-wrapper">
+  <div class="auth-brand">
+    <div class="brand-content">
+      <div class="brand-logo">
+        <span class="logo-icon">T</span>
+        <span class="logo-text">TaskFlow</span>
+      </div>
+      <h1>Set up your organization</h1>
+      <p>Create a TaskFlow account for your organization and start managing work execution efficiently from day one.</p>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>Create organization</h2>
+        <p>You'll be the admin of your organization</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" formControlName="name" placeholder="John Smith" data-testid="signup-name" />
+          <span class="error-msg" *ngIf="form.get('name')?.touched && form.get('name')?.errors?.['required']">Name is required</span>
+        </div>
+
+        <div class="form-group">
+          <label>Organization Name</label>
+          <input type="text" formControlName="orgName" placeholder="Acme Corporation" data-testid="signup-org" />
+          <span class="error-msg" *ngIf="form.get('orgName')?.touched && form.get('orgName')?.errors?.['required']">Organization name is required</span>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" formControlName="email" placeholder="you@company.com" data-testid="signup-email" />
+          <span class="error-msg" *ngIf="form.get('email')?.touched && form.get('email')?.errors?.['required']">Email is required</span>
+          <span class="error-msg" *ngIf="form.get('email')?.touched && form.get('email')?.errors?.['email']">Enter a valid email</span>
+        </div>
+
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="tel" formControlName="mobile" placeholder="+1 555 000 0000" data-testid="signup-mobile" />
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <div class="password-wrapper">
+            <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Min. 8 characters" data-testid="signup-password" />
+            <button type="button" class="pwd-toggle" (click)="showPassword = !showPassword">
+              {{ showPassword ? '&#128575;' : '&#128065;' }}
+            </button>
+          </div>
+          <span class="error-msg" *ngIf="form.get('password')?.touched && form.get('password')?.errors?.['minlength']">Password must be at least 8 characters</span>
+        </div>
+
+        <div class="alert-error" *ngIf="error" data-testid="signup-error">{{ error }}</div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-full" [disabled]="loading" data-testid="signup-submit">
+          <span *ngIf="loading" class="spinner" style="width:16px;height:16px;border-width:2px;"></span>
+          {{ loading ? 'Creating account...' : 'Create Organization' }}
+        </button>
+
+        <p class="auth-link">Already have an account? <a routerLink="/auth/login">Sign in</a></p>
+      </form>
+    </div>
+  </div>
+</div>

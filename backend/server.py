@@ -1,89 +1,109 @@
-from fastapi import FastAPI, APIRouter
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
+"""
+TaskFlow - Python FastAPI Proxy
+Forwards all /api requests to Node.js backend on port 8002
+Also manages starting the Node.js server as a subprocess
+"""
+import subprocess
+import sys
 import os
-import logging
-from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
+import time
+import signal
+import threading
+import httpx
+from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 
-
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
-
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-# Create the main app without a prefix
-app = FastAPI()
-
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
-
-
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
-
-# Include the router in the main app
-app.include_router(api_router)
+app = FastAPI(title="TaskFlow Proxy")
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+NODE_BASE = "http://localhost:8002"
+node_process = None
+
+
+def start_node_server():
+    global node_process
+    node_dir = "/app/nodebackend"
+    env = os.environ.copy()
+    env["NODE_PORT"] = "8002"
+    env["PG_HOST"] = "localhost"
+    env["PG_DATABASE"] = "taskmanagement"
+    env["PG_USER"] = "taskadmin"
+    env["PG_PASSWORD"] = "taskpass123"
+    env["PG_PORT"] = "5432"
+    env["JWT_SECRET"] = "taskflow_secret_key_enterprise_2024"
+
+    try:
+        node_process = subprocess.Popen(
+            ["node", "server.js"],
+            cwd=node_dir,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT
+        )
+
+        def log_output():
+            for line in iter(node_process.stdout.readline, b''):
+                print(f"[NODE] {line.decode().strip()}", flush=True)
+
+        t = threading.Thread(target=log_output, daemon=True)
+        t.start()
+        time.sleep(2)
+        print("Node.js server started", flush=True)
+    except Exception as e:
+        print(f"Failed to start Node.js: {e}", flush=True)
+
+
+@app.on_event("startup")
+async def startup():
+    start_node_server()
+
 
 @app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+async def shutdown():
+    if node_process:
+        node_process.terminate()
+
+
+@app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+async def proxy(request: Request, path: str):
+    url = f"{NODE_BASE}/api/{path}"
+    params = dict(request.query_params)
+    headers = {k: v for k, v in request.headers.items()
+               if k.lower() not in ("host", "content-length")}
+
+    try:
+        body = await request.body()
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.request(
+                method=request.method,
+                url=url,
+                params=params,
+                headers=headers,
+                content=body
+            )
+        resp_headers = {k: v for k, v in resp.headers.items()
+                        if k.lower() not in ("content-encoding", "transfer-encoding")}
+        return Response(
+            content=resp.content,
+            status_code=resp.status_code,
+            headers=resp_headers,
+            media_type=resp.headers.get("content-type", "application/json")
+        )
+    except httpx.ConnectError:
+        return Response(content='{"message":"Backend service unavailable"}', status_code=503,
+                        media_type="application/json")
+    except Exception as e:
+        return Response(content=f'{{"message":"{str(e)}"}}', status_code=500,
+                        media_type="application/json")
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "proxy": "active"}

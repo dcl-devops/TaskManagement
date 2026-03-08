@@ -1,0 +1,130 @@
+<div class="dashboard-page">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+    <div class="header-actions">
+      <span class="text-sm text-muted">{{ auth.currentUser?.org_name }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-overlay"><div class="spinner"></div></div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid" *ngIf="!loading">
+    <div class="stat-card" (click)="goToTasks()" data-testid="stat-my-tasks">
+      <div class="stat-label">My Active Tasks</div>
+      <div class="stat-value">{{ stats.my_tasks || 0 }}</div>
+      <div class="stat-icon" style="background:#eff6ff;color:#2563eb;">&#9745;</div>
+    </div>
+    <div class="stat-card" (click)="goToTasks({due: 'today'})" data-testid="stat-due-today">
+      <div class="stat-label">Due Today</div>
+      <div class="stat-value" [style.color]="stats.due_today > 0 ? '#f97316' : 'inherit'">{{ stats.due_today || 0 }}</div>
+      <div class="stat-icon" style="background:#fff7ed;color:#f97316;">&#9200;</div>
+    </div>
+    <div class="stat-card" (click)="goToTasks({overdue: 'true'})" data-testid="stat-overdue">
+      <div class="stat-label">Overdue</div>
+      <div class="stat-value" [style.color]="stats.overdue > 0 ? '#ef4444' : 'inherit'">{{ stats.overdue || 0 }}</div>
+      <div class="stat-icon" style="background:#fef2f2;color:#ef4444;">&#9888;</div>
+    </div>
+    <div class="stat-card" (click)="goToTasks({week: 'true'})" data-testid="stat-due-week">
+      <div class="stat-label">Due This Week</div>
+      <div class="stat-value">{{ stats.due_this_week || 0 }}</div>
+      <div class="stat-icon" style="background:#f0fdf4;color:#22c55e;">&#128197;</div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid" *ngIf="!loading">
+    <!-- Priority Breakdown -->
+    <div class="card priority-card">
+      <div class="card-header">
+        <h3>Tasks by Priority</h3>
+      </div>
+      <div class="card-body">
+        <div class="priority-row" *ngFor="let p of ['critical','high','medium','low']" (click)="goToTasks({priority: p})">
+          <div class="priority-info">
+            <span class="priority-dot" [class]="p"></span>
+            <span class="priority-label">{{ p | titlecase }}</span>
+          </div>
+          <div class="priority-bar-wrap">
+            <div class="priority-bar" [class]="'bar-' + p"
+              [style.width.%]="stats.by_priority ? (stats.by_priority[p] / (stats.total_visible || 1)) * 100 : 0">
+            </div>
+          </div>
+          <span class="priority-count">{{ stats.by_priority?.[p] || 0 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Breakdown -->
+    <div class="card status-card">
+      <div class="card-header">
+        <h3>Tasks by Status</h3>
+      </div>
+      <div class="card-body">
+        <div class="status-row" *ngFor="let s of ['open','in_progress','on_hold','resolved','closed']" (click)="goToTasks({status: s})">
+          <span class="badge" [class]="getStatusClass(s)">{{ s | titlecase }}</span>
+          <span class="status-count font-semibold">{{ stats.by_status?.[s] || 0 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Tasks Table -->
+    <div class="card recent-tasks-card">
+      <div class="card-header">
+        <h3>Recent Open Tasks</h3>
+        <a routerLink="/tasks" class="btn btn-ghost btn-sm">View all</a>
+      </div>
+      <div class="table-container" style="border:none;border-radius:0;">
+        <table>
+          <thead>
+            <tr>
+              <th>Task #</th>
+              <th>Title</th>
+              <th>Assigned To</th>
+              <th>Priority</th>
+              <th>Due Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of stats.recent_tasks" (click)="goToTasks({id: task.id})" style="cursor:pointer;" [attr.data-testid]="'task-row-' + task.id">
+              <td class="text-sm text-muted">{{ task.task_number }}</td>
+              <td>
+                <span class="priority-dot" [class]="task.priority" style="margin-right:0.5rem;"></span>
+                {{ task.title }}
+              </td>
+              <td class="text-sm">{{ task.assigned_to_name }}</td>
+              <td><span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | titlecase }}</span></td>
+              <td class="text-sm" [class.text-danger]="isOverdue(task.due_date)">
+                {{ formatDate(task.due_date) }}
+              </td>
+              <td><span class="badge" [class]="getStatusClass(task.status)">{{ task.status | titlecase }}</span></td>
+            </tr>
+            <tr *ngIf="!stats.recent_tasks?.length">
+              <td colspan="6" class="empty-cell">No tasks found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Team Workload -->
+    <div class="card team-card" *ngIf="auth.isManagerOrAbove() && teamWorkload.length > 0">
+      <div class="card-header">
+        <h3>Team Workload</h3>
+      </div>
+      <div class="card-body">
+        <div class="team-row" *ngFor="let member of teamWorkload">
+          <div class="avatar avatar-sm">{{ member.name?.charAt(0) }}</div>
+          <div class="team-member-info">
+            <span class="font-medium text-sm">{{ member.name }}</span>
+            <span class="text-xs text-muted">{{ member.active_tasks }} active &bull; {{ member.overdue_tasks }} overdue</span>
+          </div>
+          <div class="team-bar-wrap">
+            <div class="team-bar" [style.width.%]="Math.min((member.active_tasks / 20) * 100, 100)"></div>
+          </div>
+          <span class="team-count text-sm font-semibold">{{ member.active_tasks }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

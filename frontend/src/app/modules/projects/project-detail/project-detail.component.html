@@ -1,0 +1,80 @@
+<div *ngIf="loading" class="loading-overlay"><div class="spinner"></div></div>
+<ng-container *ngIf="project && !loading">
+  <div class="page-header">
+    <div>
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+        <button class="btn btn-ghost btn-sm" routerLink="/projects">&#8592; Back</button>
+        <span class="text-sm text-muted">{{ project.project_number }}</span>
+        <span class="badge" [class]="getPriorityClass(project.priority)">{{ project.priority | titlecase }}</span>
+        <span class="badge" [class]="getStatusClass(project.status)">{{ project.status | titlecase }}</span>
+      </div>
+      <h1>{{ project.title }}</h1>
+    </div>
+    <div class="header-actions">
+      <a [routerLink]="['/tasks/new']" [queryParams]="{project: projId, category: 'project'}" class="btn btn-secondary btn-sm">+ Add Task</a>
+      <a [routerLink]="['/projects', projId, 'edit']" class="btn btn-primary btn-sm">Edit Project</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;">
+    <div class="stat-card"><div class="stat-label">Total Tasks</div><div class="stat-value">{{ project.total_tasks }}</div></div>
+    <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value" style="color:var(--priority-low);">{{ project.completed_tasks }}</div></div>
+    <div class="stat-card"><div class="stat-label">Overdue</div><div class="stat-value" [style.color]="project.overdue_tasks > 0 ? 'var(--priority-critical)' : 'inherit'">{{ project.overdue_tasks }}</div></div>
+    <div class="stat-card"><div class="stat-label">Progress</div><div class="stat-value">{{ getProgress() }}%</div></div>
+  </div>
+  <div class="card" style="padding:1rem 1.5rem;margin-bottom:1.5rem;">
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <div style="flex:1;height:8px;background:var(--bg-tertiary);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;background:var(--accent-blue);border-radius:4px;transition:width .5s ease;" [style.width.%]="getProgress()"></div>
+      </div>
+      <span class="font-bold">{{ getProgress() }}%</span>
+    </div>
+    <div style="display:flex;gap:2rem;margin-top:.75rem;flex-wrap:wrap;">
+      <span class="text-sm text-muted">Owner: {{ project.owner_name }}</span>
+      <span class="text-sm text-muted" *ngIf="project.start_date">Start: {{ formatDate(project.start_date) }}</span>
+      <span class="text-sm text-muted" *ngIf="project.end_date">End: {{ formatDate(project.end_date) }}</span>
+      <span class="text-sm text-muted">Members: {{ project.member_count }}</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs-header">
+      <button class="tab-btn" [class.active]="activeTab === 'tasks'" (click)="activeTab='tasks'">Tasks ({{ tasks.length }})</button>
+      <button class="tab-btn" [class.active]="activeTab === 'updates'" (click)="activeTab='updates'">Updates ({{ updates.length }})</button>
+      <button class="tab-btn" [class.active]="activeTab === 'members'" (click)="activeTab='members'">Members ({{ project.members?.length }})</button>
+    </div>
+    <div style="padding:1.25rem;">
+      <ng-container *ngIf="activeTab === 'tasks'">
+        <div *ngFor="let t of tasks" [routerLink]="['/tasks', t.id]" style="display:flex;align-items:center;gap:.75rem;padding:.625rem;border-bottom:1px solid var(--border-color);cursor:pointer;" class="task-row">
+          <span class="priority-dot" [class]="t.priority"></span>
+          <span class="text-sm flex-1">{{ t.task_number }} - {{ t.title }}</span>
+          <span class="text-sm text-muted">{{ t.assigned_to_name }}</span>
+          <span class="badge" [class]="'badge-' + t.status">{{ t.status | titlecase }}</span>
+        </div>
+        <div *ngIf="tasks.length === 0" class="empty-state" style="padding:1.5rem;"><p>No tasks in this project</p></div>
+      </ng-container>
+      <ng-container *ngIf="activeTab === 'updates'">
+        <div *ngFor="let u of updates" style="display:flex;gap:.75rem;margin-bottom:1rem;">
+          <div class="avatar avatar-sm">{{ getInitials(u.user_name) }}</div>
+          <div style="flex:1;background:var(--bg-secondary);padding:.75rem;border-radius:var(--radius);">
+            <div style="display:flex;gap:.75rem;margin-bottom:.25rem;"><span class="font-medium text-sm">{{ u.user_name }}</span><span class="text-xs text-muted">{{ formatDate(u.created_at) }}</span></div>
+            <p class="text-sm" style="color:var(--text-secondary);">{{ u.remark }}</p>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border-color);padding-top:1rem;display:flex;flex-direction:column;gap:.5rem;">
+          <textarea [(ngModel)]="newRemark" rows="3" placeholder="Add update..." data-testid="proj-update-input"></textarea>
+          <button class="btn btn-primary btn-sm" style="align-self:flex-end;" (click)="addUpdate()" [disabled]="!newRemark.trim()">Post Update</button>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="activeTab === 'members'">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem;">
+          <div *ngFor="let m of project.members" style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:var(--bg-secondary);border-radius:var(--radius);">
+            <div class="avatar">{{ getInitials(m.name) }}</div>
+            <div><div class="font-medium text-sm">{{ m.name }}</div><div class="text-xs text-muted">{{ m.email }}</div></div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</ng-container>

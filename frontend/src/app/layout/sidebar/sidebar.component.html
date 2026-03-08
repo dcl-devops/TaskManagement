@@ -1,0 +1,38 @@
+<nav class="sidebar" [class.collapsed]="collapsed" [class.mobile-open]="mobileOpen">
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <span class="logo-icon">T</span>
+      <span class="logo-text" *ngIf="!collapsed">TaskFlow</span>
+    </div>
+    <button class="collapse-btn" (click)="toggleCollapse.emit()" data-testid="sidebar-toggle">
+      {{ collapsed ? '&#9654;' : '&#9664;' }}
+    </button>
+  </div>
+
+  <!-- Navigation -->
+  <div class="sidebar-nav">
+    <a
+      *ngFor="let item of visibleItems"
+      [routerLink]="item.path"
+      class="nav-item"
+      [class.active]="isActive(item.path)"
+      [title]="collapsed ? item.label : ''"
+      [attr.data-testid]="'nav-' + item.label.toLowerCase()"
+    >
+      <span class="nav-icon">{{ item.icon }}</span>
+      <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
+    </a>
+  </div>
+
+  <!-- User -->
+  <div class="sidebar-footer">
+    <div class="user-info" *ngIf="auth.currentUser">
+      <div class="avatar avatar-sm">{{ getUserInitials() }}</div>
+      <div class="user-details" *ngIf="!collapsed">
+        <span class="user-name truncate">{{ auth.currentUser.name }}</span>
+        <span class="user-role">{{ auth.currentUser.role | titlecase }}</span>
+      </div>
+    </div>
+  </div>
+</nav>

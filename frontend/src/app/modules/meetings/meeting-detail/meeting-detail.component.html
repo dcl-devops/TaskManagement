@@ -1,0 +1,102 @@
+<div *ngIf="loading" class="loading-overlay"><div class="spinner"></div></div>
+<ng-container *ngIf="meeting && !loading">
+  <div class="page-header">
+    <div>
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+        <button class="btn btn-ghost btn-sm" routerLink="/meetings">&#8592; Back</button>
+        <span style="font-size:.875rem;color:var(--text-muted);">{{ meeting.meeting_number }}</span>
+        <span class="badge" [class]="getStatusClass(meeting.status)">{{ meeting.status | titlecase }}</span>
+      </div>
+      <h1>{{ meeting.title }}</h1>
+    </div>
+    <div class="header-actions">
+      <a [routerLink]="['/tasks/new']" [queryParams]="{meeting: meetingId, category: 'meeting'}" class="btn btn-secondary btn-sm">+ Create Task</a>
+      <a [routerLink]="['/meetings', meetingId, 'edit']" class="btn btn-primary btn-sm">Edit Meeting</a>
+    </div>
+  </div>
+
+  <!-- Meta info -->
+  <div class="meeting-meta-bar card" style="padding:1rem 1.5rem;margin-bottom:1.5rem;display:flex;gap:2rem;flex-wrap:wrap;">
+    <div><span class="text-xs text-muted">Owner</span><div class="font-medium text-sm">{{ meeting.owner_name }}</div></div>
+    <div><span class="text-xs text-muted">Date</span><div class="font-medium text-sm">{{ formatDate(meeting.meeting_date) }}</div></div>
+    <div><span class="text-xs text-muted">Location</span><div class="font-medium text-sm">{{ meeting.location_name || (meeting.virtual_link ? 'Virtual' : '-') }}</div></div>
+    <div><span class="text-xs text-muted">Members</span><div class="font-medium text-sm">{{ meeting.member_count }}</div></div>
+    <div><span class="text-xs text-muted">Tasks</span><div class="font-medium text-sm">{{ meeting.task_count }}</div></div>
+  </div>
+
+  <div class="card">
+    <div class="tabs-header">
+      <button class="tab-btn" [class.active]="activeTab === 'updates'" (click)="activeTab='updates'">Updates ({{ updates.length }})</button>
+      <button class="tab-btn" [class.active]="activeTab === 'mom'" (click)="activeTab='mom'">Minutes of Meeting ({{ moms.length }})</button>
+      <button class="tab-btn" [class.active]="activeTab === 'tasks'" (click)="activeTab='tasks'">Tasks ({{ tasks.length }})</button>
+      <button class="tab-btn" [class.active]="activeTab === 'members'" (click)="activeTab='members'">Members ({{ meeting.members?.length }})</button>
+    </div>
+
+    <div class="tab-content" style="padding:1.25rem;">
+      <!-- Updates -->
+      <ng-container *ngIf="activeTab === 'updates'">
+        <div class="timeline">
+          <div class="timeline-item" *ngFor="let u of updates">
+            <div class="avatar avatar-sm">{{ getInitials(u.user_name) }}</div>
+            <div class="timeline-body">
+              <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.25rem;">
+                <span class="font-medium text-sm">{{ u.user_name }}</span>
+                <span class="text-xs text-muted">{{ formatDate(u.created_at) }}</span>
+              </div>
+              <p class="text-sm" style="color:var(--text-secondary);">{{ u.remark }}</p>
+            </div>
+          </div>
+          <div *ngIf="updates.length === 0" class="empty-state" style="padding:1.5rem;"><p>No updates yet</p></div>
+        </div>
+        <div class="input-area">
+          <textarea [(ngModel)]="newRemark" rows="3" placeholder="Add an update..." data-testid="meeting-update-input"></textarea>
+          <button class="btn btn-primary btn-sm" (click)="addUpdate()" [disabled]="!newRemark.trim()" data-testid="submit-update">Post Update</button>
+        </div>
+      </ng-container>
+
+      <!-- MOM -->
+      <ng-container *ngIf="activeTab === 'mom'">
+        <div class="mom-list">
+          <div class="mom-item card" *ngFor="let m of moms" style="padding:1rem;margin-bottom:.75rem;">
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+              <div class="avatar avatar-sm">{{ getInitials(m.user_name) }}</div>
+              <span class="font-medium text-sm">{{ m.user_name }}</span>
+              <span class="text-xs text-muted">{{ formatDate(m.created_at) }}</span>
+            </div>
+            <p style="white-space:pre-wrap;font-size:.9375rem;color:var(--text-secondary);">{{ m.content }}</p>
+          </div>
+        </div>
+        <div class="input-area">
+          <textarea [(ngModel)]="newMom" rows="4" placeholder="Add minutes of meeting..." data-testid="mom-input"></textarea>
+          <button class="btn btn-primary btn-sm" (click)="addMom()" [disabled]="!newMom.trim()" data-testid="submit-mom">Add MOM</button>
+        </div>
+      </ng-container>
+
+      <!-- Tasks -->
+      <ng-container *ngIf="activeTab === 'tasks'">
+        <div class="tasks-simple">
+          <div *ngFor="let t of tasks" [routerLink]="['/tasks', t.id]" class="task-row" style="cursor:pointer;">
+            <span class="priority-dot" [class]="t.priority"></span>
+            <span class="text-sm flex-1">{{ t.task_number }} - {{ t.title }}</span>
+            <span class="text-sm text-muted">{{ t.assigned_to_name }}</span>
+            <span class="badge" [class]="'badge-' + t.status" style="margin-left:.5rem;">{{ t.status | titlecase }}</span>
+          </div>
+          <div *ngIf="tasks.length === 0" class="empty-state" style="padding:1.5rem;"><p>No tasks linked to this meeting</p></div>
+        </div>
+      </ng-container>
+
+      <!-- Members -->
+      <ng-container *ngIf="activeTab === 'members'">
+        <div class="members-grid">
+          <div *ngFor="let m of meeting.members" class="member-card" style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:var(--bg-secondary);border-radius:var(--radius);">
+            <div class="avatar">{{ getInitials(m.name) }}</div>
+            <div>
+              <div class="font-medium text-sm">{{ m.name }}</div>
+              <div class="text-xs text-muted">{{ m.email }}</div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</ng-container>

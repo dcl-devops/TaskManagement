@@ -1,0 +1,108 @@
+<div class="page-header">
+  <h1>Users <span class="total-badge">{{ total }}</span></h1>
+  <div class="header-actions">
+    <div class="search-wrapper" style="max-width:220px;">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" [(ngModel)]="search" (input)="load()" placeholder="Search users..." data-testid="user-search" />
+    </div>
+    <select [(ngModel)]="roleFilter" (change)="load()" style="height:36px;width:120px;" data-testid="filter-role">
+      <option value="">All Roles</option>
+      <option value="owner">Owner</option>
+      <option value="admin">Admin</option>
+      <option value="manager">Manager</option>
+      <option value="user">User</option>
+    </select>
+    <select [(ngModel)]="statusFilter" (change)="load()" style="height:36px;width:120px;">
+      <option value="">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+    <button class="btn btn-primary" (click)="openNew()" data-testid="add-user-btn">+ Add User</button>
+  </div>
+</div>
+
+<div *ngIf="loading" class="loading-overlay"><div class="spinner"></div></div>
+
+<div class="card table-container" *ngIf="!loading">
+  <table data-testid="users-table">
+    <thead>
+      <tr>
+        <th>Employee Code</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Department</th>
+        <th>Location</th>
+        <th>Manager</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let u of users" [attr.data-testid]="'user-row-' + u.id">
+        <td class="text-sm text-muted">{{ u.employee_code || '-' }}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:.625rem;">
+            <div class="avatar avatar-sm">{{ u.name?.charAt(0) }}</div>
+            <span class="font-medium text-sm">{{ u.name }}</span>
+          </div>
+        </td>
+        <td class="text-sm">{{ u.email }}</td>
+        <td class="text-sm">{{ u.department_name || '-' }}</td>
+        <td class="text-sm">{{ u.location_name || '-' }}</td>
+        <td class="text-sm">{{ u.manager_name || '-' }}</td>
+        <td><span class="role-badge role-{{ u.role }}">{{ u.role | titlecase }}</span></td>
+        <td>
+          <span class="status-badge" [class.active]="u.status === 'active'" [class.inactive]="u.status === 'inactive'">
+            {{ u.status | titlecase }}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:.5rem;">
+            <button class="btn btn-ghost btn-sm btn-icon" (click)="editUser(u)" title="Edit" data-testid="edit-user-btn">&#9998;</button>
+            <button class="btn btn-ghost btn-sm" (click)="toggleStatus(u)" [title]="u.status === 'active' ? 'Deactivate' : 'Activate'">
+              {{ u.status === 'active' ? 'Deactivate' : 'Activate' }}
+            </button>
+            <button class="btn btn-ghost btn-sm" (click)="resetPassword(u)" title="Reset Password">Reset Pwd</button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="users.length === 0">
+        <td colspan="9"><div class="empty-state" style="padding:2rem;"><p>No users found</p></div></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- User Form Modal -->
+<div class="modal-overlay" *ngIf="showForm" (click)="showForm=false">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingUser ? 'Edit User' : 'Add New User' }}</h3>
+      <button class="btn btn-ghost btn-icon" (click)="showForm=false">&#10005;</button>
+    </div>
+    <form [formGroup]="form" class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Employee Code</label><input formControlName="employee_code" data-testid="emp-code" /></div>
+        <div class="form-group"><label>Full Name *</label><input formControlName="name" data-testid="user-name" /><span class="error-msg" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">Required</span></div>
+        <div class="form-group"><label>Email *</label><input type="email" formControlName="email" data-testid="user-email" /><span class="error-msg" *ngIf="form.get('email')?.touched && form.get('email')?.errors?.['email']">Valid email required</span></div>
+        <div class="form-group" *ngIf="!editingUser"><label>Password *</label><input type="password" formControlName="password" data-testid="user-pwd" /></div>
+        <div class="form-group"><label>Mobile</label><input formControlName="mobile" data-testid="user-mobile" /></div>
+        <div class="form-group"><label>Company</label><select formControlName="company_id"><option [value]="null">Select</option><option *ngFor="let c of companies" [value]="c.id">{{ c.name }}</option></select></div>
+        <div class="form-group"><label>Location</label><select formControlName="location_id"><option [value]="null">Select</option><option *ngFor="let l of locations" [value]="l.id">{{ l.name }}</option></select></div>
+        <div class="form-group"><label>Department</label><select formControlName="department_id"><option [value]="null">Select</option><option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option></select></div>
+        <div class="form-group"><label>Designation</label><select formControlName="designation_id"><option [value]="null">Select</option><option *ngFor="let d of designations" [value]="d.id">{{ d.name }}</option></select></div>
+        <div class="form-group"><label>Reporting Manager</label><select formControlName="manager_id"><option [value]="null">None</option><option *ngFor="let u of allUsers" [value]="u.id">{{ u.name }}</option></select></div>
+        <div class="form-group"><label>Role *</label><select formControlName="role" data-testid="user-role"><option value="user">User</option><option value="manager">Manager</option><option value="admin">Admin</option></select></div>
+        <div class="form-group" *ngIf="editingUser"><label>Status *</label><select formControlName="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+      </div>
+    </form>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="showForm=false">Cancel</button>
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving" data-testid="save-user-btn">
+        <span *ngIf="saving" class="spinner" style="width:14px;height:14px;border-width:2px;"></span>
+        {{ saving ? 'Saving...' : (editingUser ? 'Update User' : 'Create User') }}
+      </button>
+    </div>
+  </div>
+</div>

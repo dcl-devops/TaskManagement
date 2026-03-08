@@ -1,0 +1,8 @@
+.total-badge { display: inline-block; background: var(--bg-tertiary); color: var(--text-muted); font-size: .875rem; padding: .125rem .5rem; border-radius: 999px; margin-left: .5rem; font-family: 'Inter', sans-serif; }
+.role-badge { padding: .125rem .625rem; border-radius: 999px; font-size: .75rem; font-weight: 500; }
+.role-owner, .role-admin { background: #ede9fe; color: #5b21b6; }
+.role-manager { background: #dbeafe; color: #1e40af; }
+.role-user { background: var(--bg-tertiary); color: var(--text-secondary); }
+.status-badge { padding: .125rem .625rem; border-radius: 999px; font-size: .75rem; font-weight: 500; }
+.status-badge.active { background: #dcfce7; color: #166534; }
+.status-badge.inactive { background: #fef2f2; color: #991b1b; }

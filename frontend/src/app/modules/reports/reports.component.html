@@ -1,0 +1,127 @@
+<div class="page-header">
+  <h1>Reports</h1>
+</div>
+
+<div class="reports-layout">
+  <!-- Sidebar -->
+  <div class="report-nav card" style="padding:0;overflow:hidden;">
+    <div style="padding:.75rem 1rem;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);border-bottom:1px solid var(--border-color);">Report Types</div>
+    <button *ngFor="let r of reports" class="report-nav-item" [class.active]="activeReport === r.key" (click)="selectReport(r.key)" [attr.data-testid]="'report-' + r.key">
+      {{ r.label }}
+    </button>
+  </div>
+
+  <!-- Report Content -->
+  <div class="report-content">
+    <div *ngIf="loading" class="loading-overlay"><div class="spinner"></div></div>
+
+    <!-- Overdue Tasks -->
+    <div class="card table-container" *ngIf="!loading && activeReport === 'overdue-tasks'">
+      <table data-testid="overdue-report">
+        <thead><tr><th>Task #</th><th>Title</th><th>Assigned To</th><th>Department</th><th>Priority</th><th>Due Date</th><th>Days Overdue</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let r of data">
+            <td class="text-sm text-muted">{{ r.task_number }}</td>
+            <td class="font-medium text-sm">{{ r.title }}</td>
+            <td class="text-sm">{{ r.assigned_to_name }}</td>
+            <td class="text-sm">{{ r.department_name || '-' }}</td>
+            <td><span class="badge" [class]="getPriorityClass(r.priority)">{{ r.priority | titlecase }}</span></td>
+            <td class="text-sm" style="color:#ef4444;">{{ formatDate(r.due_date) }}</td>
+            <td class="text-sm font-semibold" style="color:#ef4444;">{{ Math.abs(r.days_overdue || 0) }} days</td>
+            <td><span class="badge" [class]="getStatusClass(r.status)">{{ r.status | titlecase }}</span></td>
+          </tr>
+          <tr *ngIf="data.length === 0"><td colspan="8"><div class="empty-state" style="padding:2rem;"><h3>No overdue tasks</h3><p>All tasks are on schedule</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Task Aging -->
+    <div class="card table-container" *ngIf="!loading && activeReport === 'task-aging'">
+      <table><thead><tr><th>Task #</th><th>Title</th><th>Age (Days)</th><th>Assigned To</th><th>Department</th><th>Priority</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of data">
+          <td class="text-sm text-muted">{{ r.task_number }}</td>
+          <td class="font-medium text-sm">{{ r.title }}</td>
+          <td><span class="age-badge" [class.age-critical]="r.age_days > 30" [class.age-warn]="r.age_days > 14 && r.age_days <= 30">{{ r.age_days }}d</span></td>
+          <td class="text-sm">{{ r.assigned_to_name }}</td>
+          <td class="text-sm">{{ r.department_name || '-' }}</td>
+          <td><span class="badge" [class]="getPriorityClass(r.priority)">{{ r.priority | titlecase }}</span></td>
+          <td><span class="badge" [class]="getStatusClass(r.status)">{{ r.status | titlecase }}</span></td>
+        </tr>
+        <tr *ngIf="data.length === 0"><td colspan="7"><div class="empty-state" style="padding:2rem;"><p>No aging tasks</p></div></td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- User Productivity -->
+    <div class="card table-container" *ngIf="!loading && activeReport === 'user-productivity'">
+      <table><thead><tr><th>Name</th><th>Department</th><th>Total</th><th>Completed</th><th>In Progress</th><th>Overdue</th><th>Completion Rate</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of data">
+          <td><div style="display:flex;align-items:center;gap:.625rem;"><div class="avatar avatar-sm">{{ r.name?.charAt(0) }}</div><span class="font-medium text-sm">{{ r.name }}</span></div></td>
+          <td class="text-sm">{{ r.department_name || '-' }}</td>
+          <td class="font-semibold">{{ r.total_tasks }}</td>
+          <td style="color:var(--priority-low);" class="font-semibold">{{ r.completed }}</td>
+          <td style="color:var(--status-progress);" class="font-semibold">{{ r.in_progress }}</td>
+          <td [style.color]="r.overdue > 0 ? 'var(--priority-critical)' : 'inherit'" class="font-semibold">{{ r.overdue }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <div style="flex:1;height:6px;background:var(--bg-tertiary);border-radius:3px;overflow:hidden;">
+                <div style="height:100%;background:var(--priority-low);border-radius:3px;" [style.width.%]="r.total_tasks > 0 ? (r.completed / r.total_tasks) * 100 : 0"></div>
+              </div>
+              <span class="text-sm font-semibold">{{ r.total_tasks > 0 ? ((r.completed / r.total_tasks) * 100 | number:'1.0-0') : 0 }}%</span>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="data.length === 0"><td colspan="7"><div class="empty-state" style="padding:2rem;"><p>No data</p></div></td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- Department Performance -->
+    <div class="card table-container" *ngIf="!loading && activeReport === 'department-performance'">
+      <table><thead><tr><th>Department</th><th>Total Tasks</th><th>Completed</th><th>Overdue</th><th>Performance</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of data">
+          <td class="font-medium">{{ r.department_name }}</td>
+          <td class="font-semibold">{{ r.total_tasks }}</td>
+          <td style="color:var(--priority-low);" class="font-semibold">{{ r.completed }}</td>
+          <td [style.color]="r.overdue > 0 ? 'var(--priority-critical)' : 'inherit'" class="font-semibold">{{ r.overdue }}</td>
+          <td style="min-width:160px;">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <div style="flex:1;height:8px;background:var(--bg-tertiary);border-radius:4px;overflow:hidden;">
+                <div style="height:100%;border-radius:4px;" [class.bg-good]="r.total_tasks > 0 && (r.completed / r.total_tasks) >= .7" [style.background]="r.total_tasks > 0 && (r.completed / r.total_tasks) >= .7 ? '#22c55e' : '#f97316'" [style.width.%]="r.total_tasks > 0 ? (r.completed / r.total_tasks) * 100 : 0"></div>
+              </div>
+              <span class="text-sm font-semibold">{{ r.total_tasks > 0 ? ((r.completed / r.total_tasks) * 100 | number:'1.0-0') : 0 }}%</span>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="data.length === 0"><td colspan="5"><div class="empty-state" style="padding:2rem;"><p>No data</p></div></td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- Project Progress -->
+    <div class="card table-container" *ngIf="!loading && activeReport === 'project-progress'">
+      <table><thead><tr><th>Project #</th><th>Title</th><th>Owner</th><th>Status</th><th>Priority</th><th>End Date</th><th>Total</th><th>Completed</th><th>Progress</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of data">
+          <td class="text-sm text-muted">{{ r.project_number }}</td>
+          <td class="font-medium text-sm">{{ r.title }}</td>
+          <td class="text-sm">{{ r.owner_name }}</td>
+          <td class="text-sm">{{ r.status | titlecase }}</td>
+          <td><span class="badge" [class]="getPriorityClass(r.priority)">{{ r.priority | titlecase }}</span></td>
+          <td class="text-sm">{{ formatDate(r.end_date) }}</td>
+          <td class="font-semibold">{{ r.total_tasks }}</td>
+          <td class="font-semibold" style="color:var(--priority-low);">{{ r.completed_tasks }}</td>
+          <td style="min-width:120px;">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <div style="flex:1;height:6px;background:var(--bg-tertiary);border-radius:3px;overflow:hidden;">
+                <div style="height:100%;background:var(--accent-blue);border-radius:3px;" [style.width.%]="r.total_tasks > 0 ? (r.completed_tasks / r.total_tasks) * 100 : 0"></div>
+              </div>
+              <span class="text-xs font-semibold">{{ r.total_tasks > 0 ? ((r.completed_tasks / r.total_tasks) * 100 | number:'1.0-0') : 0 }}%</span>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="data.length === 0"><td colspan="9"><div class="empty-state" style="padding:2rem;"><p>No projects</p></div></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>

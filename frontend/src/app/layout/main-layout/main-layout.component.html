@@ -1,0 +1,22 @@
+<div class="layout-wrapper" [class.sidebar-collapsed]="sidebarCollapsed">
+  <!-- Mobile overlay -->
+  <div class="mobile-overlay" *ngIf="sidebarMobileOpen" (click)="toggleMobileSidebar()"></div>
+
+  <!-- Sidebar -->
+  <app-sidebar
+    [collapsed]="sidebarCollapsed"
+    [mobileOpen]="sidebarMobileOpen"
+    (toggleCollapse)="toggleSidebar()"
+  ></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="layout-main">
+    <app-topbar (toggleMobileSidebar)="toggleMobileSidebar()"></app-topbar>
+    <main class="layout-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Toast Notifications -->
+  <app-toast></app-toast>
+</div>
