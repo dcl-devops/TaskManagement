@@ -47,13 +47,29 @@ export class TaskFormComponent implements OnInit {
       estimated_effort: [null],
       parent_task_id: [null],
       meeting_id: [null],
-      project_id: [null]
+      project_id: [null],
+      completion_date: [null]
     });
   }
 
   ngOnInit(): void {
     this.editId = this.route.snapshot.params['id'] ? parseInt(this.route.snapshot.params['id']) : null;
     this.loadDropdowns();
+
+    // Auto-fill from query params (from meeting/project "Create Task" buttons)
+    const qp = this.route.snapshot.queryParams;
+    if (qp['meeting']) {
+      this.form.patchValue({ category: 'meeting', meeting_id: parseInt(qp['meeting']) });
+    }
+    if (qp['project']) {
+      this.form.patchValue({ category: 'project', project_id: parseInt(qp['project']) });
+    }
+
+    // Default assigned_by = current user
+    if (!this.editId && this.auth.currentUser) {
+      this.form.patchValue({ assigned_by: this.auth.currentUser.id });
+    }
+
     if (this.editId) this.loadTask();
     this.form.get('assigned_to')?.valueChanges.subscribe(uid => {
       const user = this.users.find(u => u.id == uid);
@@ -81,6 +97,7 @@ export class TaskFormComponent implements OnInit {
           ...t,
           start_date: t.start_date?.split('T')[0],
           due_date: t.due_date?.split('T')[0],
+          completion_date: t.completion_date?.split('T')[0],
           tags: t.tags?.join(',') || ''
         });
         this.form.get('start_date')?.disable();

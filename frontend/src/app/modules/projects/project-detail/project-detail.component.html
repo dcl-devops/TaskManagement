@@ -11,7 +11,7 @@
       <h1>{{ project.title }}</h1>
     </div>
     <div class="header-actions">
-      <a [routerLink]="['/tasks/new']" [queryParams]="{project: projId, category: 'project'}" class="btn btn-secondary btn-sm">+ Add Task</a>
+      <a [routerLink]="['/tasks/new']" [queryParams]="{project: projId}" class="btn btn-secondary btn-sm">+ Add Task</a>
       <a [routerLink]="['/meetings/new']" [queryParams]="{project_id: projId}" class="btn btn-secondary btn-sm">+ Add Meeting</a>
       <a [routerLink]="['/projects', projId, 'edit']" class="btn btn-primary btn-sm">Edit Project</a>
     </div>

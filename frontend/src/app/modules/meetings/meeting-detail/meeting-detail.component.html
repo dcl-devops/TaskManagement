@@ -10,7 +10,7 @@
       <h1>{{ meeting.title }}</h1>
     </div>
     <div class="header-actions">
-      <a [routerLink]="['/tasks/new']" [queryParams]="{meeting: meetingId, category: 'meeting'}" class="btn btn-secondary btn-sm">+ Create Task</a>
+      <a [routerLink]="['/tasks/new']" [queryParams]="{meeting: meetingId}" class="btn btn-secondary btn-sm">+ Create Task</a>
       <a [routerLink]="['/meetings', meetingId, 'edit']" class="btn btn-primary btn-sm">Edit Meeting</a>
     </div>
   </div>

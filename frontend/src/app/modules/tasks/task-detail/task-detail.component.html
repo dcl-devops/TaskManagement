@@ -184,6 +184,10 @@
             <span class="detail-label">Due Date</span>
             <span class="detail-value" [class.text-danger]="isOverdue()">{{ formatDate(task.due_date) }}</span>
           </div>
+          <div class="detail-row" *ngIf="task.completion_date">
+            <span class="detail-label">Completion Date</span>
+            <span class="detail-value" style="color:var(--status-closed);">{{ formatDate(task.completion_date) }}</span>
+          </div>
           <div class="detail-row" *ngIf="task.estimated_effort">
             <span class="detail-label">Est. Effort</span>
             <span class="detail-value">{{ task.estimated_effort }}h</span>

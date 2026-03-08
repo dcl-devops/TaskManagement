@@ -113,6 +113,10 @@
           <label>Due Date</label>
           <input type="date" formControlName="due_date" data-testid="task-due-date" />
         </div>
+        <div class="form-group" *ngIf="editId">
+          <label>Completion Date</label>
+          <input type="date" formControlName="completion_date" data-testid="task-completion-date" />
+        </div>
         <div class="form-group">
           <label>Priority *</label>
           <select formControlName="priority" data-testid="task-priority">

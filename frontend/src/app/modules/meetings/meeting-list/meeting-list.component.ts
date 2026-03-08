@@ -28,6 +28,7 @@ import { Router } from '@angular/router';
       <span class="badge" [class]="'badge-' + m.status">{{ m.status | formatLabel }}</span>
     </div>
     <h3 class="meeting-title">{{ m.title }}</h3>
+    <div *ngIf="m.project_title" style="margin-bottom:.5rem;"><span class="badge" style="background:var(--accent-blue-light,#dbeafe);color:var(--accent-blue,#2563eb);font-size:.6875rem;">{{ m.project_title }}</span></div>
     <div class="meeting-meta">
       <span class="text-sm text-muted">Owner: {{ m.owner_name || '-' }}</span>
       <span class="text-sm text-muted" *ngIf="m.meeting_date">{{ formatDate(m.meeting_date) }}</span>
