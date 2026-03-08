@@ -1,0 +1,179 @@
+{
+  "project_name": "TaskFlow Enterprise",
+  "version": "1.0.0",
+  "description": "Enterprise-grade SaaS Task Management Platform",
+  "design_philosophy": {
+    "core_principle": "Clarity is King. Data is Queen.",
+    "emotional_tone": "Authoritative, Efficient, Trustworthy, Modern",
+    "visual_style": "Swiss High-Contrast meets Soft Utility",
+    "anti_patterns": [
+      "No gradient text on critical data",
+      "No cutesy illustrations",
+      "No infinite scrolling on data tables (use pagination)",
+      "No center-aligned text for data"
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Manrope, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-4xl font-bold tracking-tight lg:text-5xl",
+      "h2": "text-3xl font-semibold tracking-tight",
+      "h3": "text-2xl font-semibold tracking-tight",
+      "h4": "text-xl font-medium tracking-tight",
+      "body_lg": "text-lg leading-relaxed",
+      "body_base": "text-base leading-relaxed",
+      "body_sm": "text-sm leading-snug",
+      "caption": "text-xs text-muted-foreground"
+    },
+    "usage_rules": {
+      "headings": "Use Manrope for all headings (h1-h4). Tight tracking (-0.02em).",
+      "body": "Use Inter for all body text. Relaxed leading (1.6) for readability.",
+      "numbers": "Use tabular-nums class for all data grids and dashboards to ensure alignment."
+    }
+  },
+  "colors": {
+    "theme_strategy": "light-dark-toggle",
+    "palette": {
+      "primary": {
+        "DEFAULT": "hsl(222.2 47.4% 11.2%)",
+        "foreground": "hsl(210 40% 98%)",
+        "description": "Deep Navy for primary actions and active states"
+      },
+      "secondary": {
+        "DEFAULT": "hsl(210 40% 96.1%)",
+        "foreground": "hsl(222.2 47.4% 11.2%)",
+        "description": "Soft Slate for secondary actions"
+      },
+      "accent": {
+        "DEFAULT": "hsl(221.2 83.2% 53.3%)",
+        "foreground": "hsl(210 40% 98%)",
+        "description": "Electric Indigo for focused UI elements and key highlights"
+      },
+      "muted": {
+        "DEFAULT": "hsl(210 40% 96.1%)",
+        "foreground": "hsl(215.4 16.3% 46.9%)"
+      },
+      "card": {
+        "DEFAULT": "hsl(0 0% 100%)",
+        "foreground": "hsl(222.2 47.4% 11.2%)"
+      },
+      "background": {
+        "light": "#FFFFFF",
+        "dark": "#020617"
+      }
+    },
+    "gradients": {
+      "subtle_mesh": "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-100 via-white to-white dark:from-slate-900 dark:via-slate-950 dark:to-black",
+      "usage": "Use strictly for page backgrounds, never for UI elements."
+    }
+  },
+  "layout": {
+    "grid_system": {
+      "dashboard": "grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4",
+      "marketing": "grid-cols-1 md:grid-cols-12 gap-8"
+    },
+    "spacing": {
+      "container_padding": "p-6 md:p-8 lg:p-12",
+      "section_gap": "gap-8",
+      "component_gap": "gap-4"
+    },
+    "sidebar": {
+      "width": "w-64",
+      "collapsed_width": "w-16",
+      "behavior": "Sticky, collapsible, high contrast border-r"
+    },
+    "containers": {
+      "card": "rounded-lg border border-border bg-card text-card-foreground shadow-sm",
+      "panel": "rounded-xl border border-border/50 bg-background/50 backdrop-blur-xl"
+    }
+  },
+  "components": {
+    "buttons": {
+      "default": "h-10 px-4 py-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+      "ghost": "hover:bg-accent hover:text-accent-foreground",
+      "destructive": "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+    },
+    "inputs": {
+      "default": "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    },
+    "cards": {
+      "dashboard_widget": "group relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow hover:shadow-md transition-all duration-200",
+      "hover_effect": "hover:-translate-y-1 hover:shadow-lg transition-transform duration-300 ease-out"
+    },
+    "tables": {
+      "header": "bg-muted/50 text-muted-foreground font-medium text-xs uppercase tracking-wider",
+      "row": "hover:bg-muted/50 transition-colors data-[state=selected]:bg-muted",
+      "cell": "p-4 align-middle [&:has([role=checkbox])]:pr-0"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "bg-white/70 dark:bg-black/60 backdrop-blur-xl border border-white/20 shadow-sm",
+    "grid_borders": "border-r border-b border-border/40",
+    "noise_texture": "before:absolute before:inset-0 before:bg-[url('/noise.png')] before:opacity-[0.03] before:pointer-events-none",
+    "shadows": {
+      "subtle": "shadow-sm",
+      "lifted": "shadow-lg shadow-primary/5",
+      "glow": "shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+    }
+  },
+  "motion": {
+    "transitions": "transition-all duration-200 ease-in-out",
+    "enter_animation": "animate-in fade-in slide-in-from-bottom-4 duration-500",
+    "hover_scale": "hover:scale-[1.02] active:scale-[0.98]",
+    "list_stagger": {
+      "container": "stagger-children-100",
+      "item": "animate-in fade-in slide-in-from-left-4"
+    }
+  },
+  "assets": {
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 1.5px, size 16px-24px",
+      "usage": "Use specific icons for actions (e.g., Plus for add, Trash for delete). Avoid generic dots."
+    },
+    "images": {
+      "usage": "Use primarily for user avatars and empty states.",
+      "placeholders": [
+        "https://images.unsplash.com/photo-1586732711713-421a6cc95490?auto=format&fit=crop&w=100&h=100&q=80",
+        "https://images.unsplash.com/photo-1627580113678-bdfbfa37da00?auto=format&fit=crop&w=100&h=100&q=80",
+        "https://images.unsplash.com/photo-1650784854945-264d5b0b6b07?auto=format&fit=crop&w=100&h=100&q=80"
+      ],
+      "categories": {
+        "avatars": "Professional headshots",
+        "backgrounds": "Abstract geometric or blurred office interiors (CSS preferred)"
+      }
+    }
+  },
+  "accessibility": {
+    "contrast": "Ensure text-to-background contrast ratio of at least 4.5:1",
+    "focus_states": "Visible focus rings on all interactive elements (ring-2 ring-offset-2)",
+    "aria_labels": "Mandatory for icon-only buttons",
+    "keyboard_nav": "Full keyboard support for all menus and modals"
+  },
+  "instructions_to_main_agent": [
+    "Use 'sonner' for all toast notifications.",
+    "Implement 'ThemeToggle' component in the settings or sidebar.",
+    "Use 'lucide-react' for icons.",
+    "Follow the 'Bento' grid layout for the main dashboard.",
+    "Ensure sidebar is collapsible on mobile.",
+    "Use Shadcn UI components for all interactive elements (Dialog, Sheet, Popover, etc.).",
+    "Add 'data-testid' to all interactive elements for testing.",
+    "Do not use gradients for text.",
+    "Keep the design minimal and data-focused.",
+    "Use 'date-fns' for date formatting.",
+    "Implement 'react-hook-form' with 'zod' for form validation."
+  ],
+  "universal_guidelines": {
+    "spacing_multiplier": 2,
+    "border_radius": "rounded-lg",
+    "animation_duration": "200ms",
+    "interactive_elements": "Must have hover, active, and focus states",
+    "empty_states": "Must be visually distinct and provide a clear call to action"
+  }
+}
