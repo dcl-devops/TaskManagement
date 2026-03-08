@@ -9,7 +9,7 @@ router.get('/stats', requireAuth, async (req, res) => {
     const today = new Date().toISOString().split('T')[0];
     const weekEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-    const [myTasks, allVisible, overdue, dueToday, dueWeek, byPriority, byStatus, recentTasks] = await Promise.all([
+    const [myTasks, allVisible, overdue, dueToday, dueWeek, byPriority, byStatus, recentTasks, myProjects, myMeetings] = await Promise.all([
       pool.query(`SELECT COUNT(*) FROM tasks WHERE org_id=$1 AND assigned_to=$2 AND status NOT IN ('closed')`, [req.user.org_id, req.user.id]),
       pool.query(`SELECT COUNT(*) FROM tasks WHERE org_id=$1 AND assigned_to = ANY($2::int[]) AND status NOT IN ('closed')`, [req.user.org_id, visibleIds]),
       pool.query(`SELECT COUNT(*) FROM tasks WHERE org_id=$1 AND assigned_to = ANY($2::int[]) AND due_date < $3 AND status NOT IN ('resolved','closed')`, [req.user.org_id, visibleIds, today]),
@@ -24,6 +24,14 @@ router.get('/stats', requireAuth, async (req, res) => {
          WHERE t.org_id=$1 AND t.assigned_to = ANY($2::int[]) AND t.status NOT IN ('closed')
          ORDER BY t.is_pinned DESC, t.due_date ASC NULLS LAST LIMIT 10`,
         [req.user.org_id, visibleIds]
+      ),
+      pool.query(
+        `SELECT COUNT(DISTINCT p.id) FROM projects p LEFT JOIN project_members pm ON pm.project_id = p.id WHERE p.org_id=$1 AND (p.owner_id=$2 OR p.created_by=$2 OR pm.user_id=$2)`,
+        [req.user.org_id, req.user.id]
+      ),
+      pool.query(
+        `SELECT COUNT(DISTINCT m.id) FROM meetings m LEFT JOIN meeting_members mm ON mm.meeting_id = m.id WHERE m.org_id=$1 AND (m.owner_id=$2 OR m.created_by=$2 OR mm.user_id=$2)`,
+        [req.user.org_id, req.user.id]
       )
     ]);
 
@@ -52,7 +60,9 @@ router.get('/stats', requireAuth, async (req, res) => {
         resolved: statusMap.resolved || 0,
         closed: statusMap.closed || 0
       },
-      recent_tasks: recentTasks.rows
+      recent_tasks: recentTasks.rows,
+      my_projects: parseInt(myProjects.rows[0].count),
+      my_meetings: parseInt(myMeetings.rows[0].count)
     });
   } catch (err) {
     console.error(err);

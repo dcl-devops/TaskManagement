@@ -30,6 +30,16 @@
       <div class="stat-value">{{ stats.due_this_week || 0 }}</div>
       <div class="stat-icon" style="background:#f0fdf4;color:#22c55e;">&#128197;</div>
     </div>
+    <div class="stat-card" style="cursor:pointer;" routerLink="/projects" data-testid="stat-projects">
+      <div class="stat-label">Projects</div>
+      <div class="stat-value" style="color:#8b5cf6;">{{ stats.my_projects || 0 }}</div>
+      <div class="stat-icon" style="background:#f5f3ff;color:#8b5cf6;">&#9650;</div>
+    </div>
+    <div class="stat-card" style="cursor:pointer;" routerLink="/meetings" data-testid="stat-meetings">
+      <div class="stat-label">Meetings</div>
+      <div class="stat-value" style="color:#0ea5e9;">{{ stats.my_meetings || 0 }}</div>
+      <div class="stat-icon" style="background:#f0f9ff;color:#0ea5e9;">&#9830;</div>
+    </div>
   </div>
 
   <div class="dashboard-grid" *ngIf="!loading">
