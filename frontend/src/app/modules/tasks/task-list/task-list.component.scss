@@ -4,3 +4,7 @@
 .task-title { font-size: 0.875rem; font-weight: 500; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .badge-category { background: var(--bg-tertiary); color: var(--text-secondary); }
 .text-danger { color: #ef4444 !important; }
+.sortable-col { cursor: pointer; user-select: none; white-space: nowrap; transition: color 0.15s; }
+.sortable-col:hover { color: var(--primary); }
+.sort-icon { font-size: 0.7rem; opacity: 0.4; margin-left: 2px; display: inline-block; }
+.sortable-col:hover .sort-icon { opacity: 0.8; }

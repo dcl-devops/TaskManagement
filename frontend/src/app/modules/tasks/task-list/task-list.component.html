@@ -46,16 +46,16 @@
     <thead>
       <tr>
         <th style="width:40px;">Pin</th>
-        <th>Task #</th>
-        <th>Title</th>
-        <th>Category</th>
-        <th>Assigned To</th>
-        <th>Assigned By</th>
-        <th>Department</th>
-        <th>Priority</th>
-        <th>Status</th>
-        <th>Due Date</th>
-        <th>Updated</th>
+        <th class="sortable-col" (click)="sortBy('task_number')" data-testid="sort-task-number">Task # <span class="sort-icon">{{ getSortIcon('task_number') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('title')" data-testid="sort-title">Title <span class="sort-icon">{{ getSortIcon('title') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('category')" data-testid="sort-category">Category <span class="sort-icon">{{ getSortIcon('category') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('assigned_to')" data-testid="sort-assigned-to">Assigned To <span class="sort-icon">{{ getSortIcon('assigned_to') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('assigned_by')" data-testid="sort-assigned-by">Assigned By <span class="sort-icon">{{ getSortIcon('assigned_by') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('department')" data-testid="sort-department">Department <span class="sort-icon">{{ getSortIcon('department') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('priority')" data-testid="sort-priority">Priority <span class="sort-icon">{{ getSortIcon('priority') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('status')" data-testid="sort-status">Status <span class="sort-icon">{{ getSortIcon('status') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('due_date')" data-testid="sort-due-date">Due Date <span class="sort-icon">{{ getSortIcon('due_date') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('updated_at')" data-testid="sort-updated">Updated <span class="sort-icon">{{ getSortIcon('updated_at') }}</span></th>
       </tr>
     </thead>
     <tbody>
