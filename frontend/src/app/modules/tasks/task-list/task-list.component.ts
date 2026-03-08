@@ -12,9 +12,12 @@ import { AuthService } from '../../../core/auth.service';
 export class TaskListComponent implements OnInit {
   tasks: any[] = [];
   loading = false;
-  filters = { status: '', priority: '', category: '', search: '' };
+  filters: any = { status: '', priority: '', category: '', search: '', assigned_to: '', assigned_by: '', meeting_id: '', project_id: '' };
   sortCol = '';
   sortDir: 'asc' | 'desc' = 'asc';
+  users: any[] = [];
+  meetings: any[] = [];
+  projects: any[] = [];
   private priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
   private statusOrder: Record<string, number> = { open: 0, in_progress: 1, on_hold: 2, resolved: 3, closed: 4 };
 
@@ -26,10 +29,17 @@ export class TaskListComponent implements OnInit {
   , private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    this.loadDropdowns();
     this.route.queryParams.subscribe(params => {
       if (params['status']) this.filters.status = params['status'];
       this.loadTasks();
     });
+  }
+
+  loadDropdowns(): void {
+    this.http.get<any>('/api/admin/users').subscribe({ next: r => { this.users = r.users || r; this.cdr.detectChanges(); } });
+    this.http.get<any[]>('/api/meetings').subscribe({ next: r => { this.meetings = r; this.cdr.detectChanges(); } });
+    this.http.get<any[]>('/api/projects').subscribe({ next: r => { this.projects = r; this.cdr.detectChanges(); } });
   }
 
   loadTasks(): void {
@@ -39,6 +49,10 @@ export class TaskListComponent implements OnInit {
     if (this.filters.priority) params['priority'] = this.filters.priority;
     if (this.filters.category) params['category'] = this.filters.category;
     if (this.filters.search) params['search'] = this.filters.search;
+    if (this.filters.assigned_to) params['assigned_to'] = this.filters.assigned_to;
+    if (this.filters.assigned_by) params['assigned_by'] = this.filters.assigned_by;
+    if (this.filters.meeting_id) params['meeting_id'] = this.filters.meeting_id;
+    if (this.filters.project_id) params['project_id'] = this.filters.project_id;
     this.http.get<any[]>('/api/tasks', { params }).subscribe({
       next: data => { this.tasks = data; this.loading = false; this.cdr.detectChanges(); },
       error: () => this.loading = false
@@ -119,7 +133,7 @@ export class TaskListComponent implements OnInit {
   }
 
   clearFilters(): void {
-    this.filters = { status: '', priority: '', category: '', search: '' };
+    this.filters = { status: '', priority: '', category: '', search: '', assigned_to: '', assigned_by: '', meeting_id: '', project_id: '' };
     this.loadTasks();
   }
 }

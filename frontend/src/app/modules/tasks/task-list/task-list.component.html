@@ -35,6 +35,22 @@
       <option value="meeting">Meeting</option>
       <option value="project">Project</option>
     </select>
+    <select [(ngModel)]="filters.assigned_to" (change)="loadTasks()" data-testid="filter-assigned-to">
+      <option value="">Assigned To</option>
+      <option *ngFor="let u of users" [value]="u.id">{{ u.name }}</option>
+    </select>
+    <select [(ngModel)]="filters.assigned_by" (change)="loadTasks()" data-testid="filter-assigned-by">
+      <option value="">Assigned By</option>
+      <option *ngFor="let u of users" [value]="u.id">{{ u.name }}</option>
+    </select>
+    <select [(ngModel)]="filters.meeting_id" (change)="loadTasks()" data-testid="filter-meeting">
+      <option value="">All Meetings</option>
+      <option *ngFor="let m of meetings" [value]="m.id">{{ m.title }}</option>
+    </select>
+    <select [(ngModel)]="filters.project_id" (change)="loadTasks()" data-testid="filter-project">
+      <option value="">All Projects</option>
+      <option *ngFor="let p of projects" [value]="p.id">{{ p.title }}</option>
+    </select>
     <button class="btn btn-ghost btn-sm" (click)="clearFilters()">Clear</button>
   </div>
 </div>
