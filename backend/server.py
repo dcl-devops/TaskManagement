@@ -27,8 +27,20 @@ NODE_BASE = "http://localhost:8002"
 node_process = None
 
 
+def ensure_postgres():
+    try:
+        result = subprocess.run(["pg_isready", "-h", "localhost"], capture_output=True, timeout=5)
+        if result.returncode != 0:
+            subprocess.run(["pg_ctlcluster", "15", "main", "start"], capture_output=True, timeout=30)
+            time.sleep(2)
+            print("PostgreSQL started", flush=True)
+    except Exception as e:
+        print(f"PostgreSQL check: {e}", flush=True)
+
+
 def start_node_server():
     global node_process
+    ensure_postgres()
     node_dir = "/app/nodebackend"
     env = os.environ.copy()
     env["NODE_PORT"] = "8002"
