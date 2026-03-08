@@ -51,10 +51,10 @@
         <td class="text-sm">{{ u.department_name || '-' }}</td>
         <td class="text-sm">{{ u.location_name || '-' }}</td>
         <td class="text-sm">{{ u.manager_name || '-' }}</td>
-        <td><span class="role-badge role-{{ u.role }}">{{ u.role | titlecase }}</span></td>
+        <td><span class="role-badge role-{{ u.role }}">{{ u.role | formatLabel }}</span></td>
         <td>
           <span class="status-badge" [class.active]="u.status === 'active'" [class.inactive]="u.status === 'inactive'">
-            {{ u.status | titlecase }}
+            {{ u.status | formatLabel }}
           </span>
         </td>
         <td>

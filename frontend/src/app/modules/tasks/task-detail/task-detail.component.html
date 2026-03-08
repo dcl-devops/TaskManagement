@@ -6,7 +6,7 @@
     <div class="task-header-left">
       <button class="btn btn-ghost btn-sm" routerLink="/tasks" data-testid="back-btn">&#8592; Back</button>
       <span class="task-number">{{ task.task_number }}</span>
-      <span class="badge" [class]="'badge-' + task.category">{{ task.category | titlecase }}</span>
+      <span class="badge" [class]="'badge-' + task.category">{{ task.category | formatLabel }}</span>
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary btn-sm" (click)="editTask()" data-testid="edit-task-btn">Edit Task</button>
@@ -23,14 +23,14 @@
           <h2>{{ task.title }}</h2>
         </div>
         <div class="task-badges">
-          <span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | titlecase }}</span>
+          <span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | formatLabel }}</span>
           <div class="status-dropdown-wrap">
             <span class="badge" [class]="getStatusClass(task.status)" (click)="showStatusMenu = !showStatusMenu" style="cursor:pointer;" data-testid="status-badge">
-              {{ task.status | titlecase }} &#9660;
+              {{ task.status | formatLabel }} &#9660;
             </span>
             <div class="status-menu" *ngIf="showStatusMenu">
               <button *ngFor="let s of statusOptions" (click)="changeStatus(s)" class="status-option" [class.active]="s === task.status">
-                {{ s | titlecase }}
+                {{ s | formatLabel }}
               </button>
             </div>
           </div>
@@ -116,7 +116,7 @@
             <div class="subtask-item" *ngFor="let s of subtasks" [routerLink]="['/tasks', s.id]" style="cursor:pointer;">
               <span class="priority-dot" [class]="s.priority"></span>
               <span class="text-sm flex-1">{{ s.task_number }} - {{ s.title }}</span>
-              <span class="badge" [class]="getStatusClass(s.status)">{{ s.status | titlecase }}</span>
+              <span class="badge" [class]="getStatusClass(s.status)">{{ s.status | formatLabel }}</span>
             </div>
             <div *ngIf="subtasks.length === 0" class="empty-state" style="padding:2rem;"><p>No subtasks</p></div>
           </div>

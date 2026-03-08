@@ -38,8 +38,8 @@
     <div class="event-dot" [style.background]="ev.color"></div>
     <div style="flex:1;">
       <div class="font-medium text-sm">{{ ev.title }}</div>
-      <div class="text-xs text-muted">{{ ev.type | titlecase }}<span *ngIf="ev.assigned_to_name"> &bull; {{ ev.assigned_to_name }}</span></div>
+      <div class="text-xs text-muted">{{ ev.type | formatLabel }}<span *ngIf="ev.assigned_to_name"> &bull; {{ ev.assigned_to_name }}</span></div>
     </div>
-    <span class="badge" *ngIf="ev.priority" [class]="'badge-' + ev.priority">{{ ev.priority | titlecase }}</span>
+    <span class="badge" *ngIf="ev.priority" [class]="'badge-' + ev.priority">{{ ev.priority | formatLabel }}</span>
   </div>
 </div>

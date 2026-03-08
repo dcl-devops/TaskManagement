@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { SharedModule } from '../../shared/shared.module';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
@@ -14,6 +15,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [AdminDashboardComponent, UsersComponent, MasterDataComponent],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule.forChild(routes)]
+  imports: [CommonModule, SharedModule, FormsModule, ReactiveFormsModule, RouterModule.forChild(routes)]
 })
 export class AdminModule {}

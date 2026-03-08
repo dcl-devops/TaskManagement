@@ -42,7 +42,7 @@
         <div class="priority-row" *ngFor="let p of ['critical','high','medium','low']" (click)="goToTasks({priority: p})">
           <div class="priority-info">
             <span class="priority-dot" [class]="p"></span>
-            <span class="priority-label">{{ p | titlecase }}</span>
+            <span class="priority-label">{{ p | formatLabel }}</span>
           </div>
           <div class="priority-bar-wrap">
             <div class="priority-bar" [class]="'bar-' + p"
@@ -61,7 +61,7 @@
       </div>
       <div class="card-body">
         <div class="status-row" *ngFor="let s of ['open','in_progress','on_hold','resolved','closed']" (click)="goToTasks({status: s})">
-          <span class="badge" [class]="getStatusClass(s)">{{ s | titlecase }}</span>
+          <span class="badge" [class]="getStatusClass(s)">{{ s | formatLabel }}</span>
           <span class="status-count font-semibold">{{ stats.by_status?.[s] || 0 }}</span>
         </div>
       </div>
@@ -93,11 +93,11 @@
                 {{ task.title }}
               </td>
               <td class="text-sm">{{ task.assigned_to_name }}</td>
-              <td><span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | titlecase }}</span></td>
+              <td><span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | formatLabel }}</span></td>
               <td class="text-sm" [class.text-danger]="isOverdue(task.due_date)">
                 {{ formatDate(task.due_date) }}
               </td>
-              <td><span class="badge" [class]="getStatusClass(task.status)">{{ task.status | titlecase }}</span></td>
+              <td><span class="badge" [class]="getStatusClass(task.status)">{{ task.status | formatLabel }}</span></td>
             </tr>
             <tr *ngIf="!stats.recent_tasks?.length">
               <td colspan="6" class="empty-cell">No tasks found</td>

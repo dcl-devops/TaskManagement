@@ -25,7 +25,7 @@ import { Router } from '@angular/router';
   <div class="meeting-card card" *ngFor="let m of meetings" (click)="open(m.id)" data-testid="meeting-card" style="cursor:pointer;">
     <div class="meeting-card-header">
       <span class="meeting-num">{{ m.meeting_number }}</span>
-      <span class="badge" [class]="'badge-' + m.status">{{ m.status | titlecase }}</span>
+      <span class="badge" [class]="'badge-' + m.status">{{ m.status | formatLabel }}</span>
     </div>
     <h3 class="meeting-title">{{ m.title }}</h3>
     <div class="meeting-meta">

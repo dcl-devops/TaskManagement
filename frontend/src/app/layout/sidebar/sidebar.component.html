@@ -31,7 +31,7 @@
       <div class="avatar avatar-sm">{{ getUserInitials() }}</div>
       <div class="user-details" *ngIf="!collapsed">
         <span class="user-name truncate">{{ auth.currentUser.name }}</span>
-        <span class="user-role">{{ auth.currentUser.role | titlecase }}</span>
+        <span class="user-role">{{ auth.currentUser.role | formatLabel }}</span>
       </div>
     </div>
   </div>

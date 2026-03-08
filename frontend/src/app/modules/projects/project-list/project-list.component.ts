@@ -27,9 +27,9 @@ import { Router } from '@angular/router';
     <div class="project-header">
       <div>
         <span class="project-num">{{ p.project_number }}</span>
-        <span class="badge" [class]="getPriorityClass(p.priority)" style="margin-left:.5rem;">{{ p.priority | titlecase }}</span>
+        <span class="badge" [class]="getPriorityClass(p.priority)" style="margin-left:.5rem;">{{ p.priority | formatLabel }}</span>
       </div>
-      <span class="badge" [class]="getStatusClass(p.status)">{{ p.status | titlecase }}</span>
+      <span class="badge" [class]="getStatusClass(p.status)">{{ p.status | formatLabel }}</span>
     </div>
     <h3 class="project-title">{{ p.title }}</h3>
     <div class="project-meta text-sm text-muted">

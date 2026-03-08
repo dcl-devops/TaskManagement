@@ -25,10 +25,10 @@
             <td class="font-medium text-sm">{{ r.title }}</td>
             <td class="text-sm">{{ r.assigned_to_name }}</td>
             <td class="text-sm">{{ r.department_name || '-' }}</td>
-            <td><span class="badge" [class]="getPriorityClass(r.priority)">{{ r.priority | titlecase }}</span></td>
+            <td><span class="badge" [class]="getPriorityClass(r.priority)">{{ r.priority | formatLabel }}</span></td>
             <td class="text-sm" style="color:#ef4444;">{{ formatDate(r.due_date) }}</td>
             <td class="text-sm font-semibold" style="color:#ef4444;">{{ Math.abs(r.days_overdue || 0) }} days</td>
-            <td><span class="badge" [class]="getStatusClass(r.status)">{{ r.status | titlecase }}</span></td>
+            <td><span class="badge" [class]="getStatusClass(r.status)">{{ r.status | formatLabel }}</span></td>
           </tr>
           <tr *ngIf="data.length === 0"><td colspan="8"><div class="empty-state" style="padding:2rem;"><h3>No overdue tasks</h3><p>All tasks are on schedule</p></div></td></tr>
         </tbody>
@@ -45,8 +45,8 @@
           <td><span class="age-badge" [class.age-critical]="r.age_days > 30" [class.age-warn]="r.age_days > 14 && r.age_days <= 30">{{ r.age_days }}d</span></td>
           <td class="text-sm">{{ r.assigned_to_name }}</td>
           <td class="text-sm">{{ r.department_name || '-' }}</td>
-          <td><span class="badge" [class]="getPriorityClass(r.priority)">{{ r.priority | titlecase }}</span></td>
-          <td><span class="badge" [class]="getStatusClass(r.status)">{{ r.status | titlecase }}</span></td>
+          <td><span class="badge" [class]="getPriorityClass(r.priority)">{{ r.priority | formatLabel }}</span></td>
+          <td><span class="badge" [class]="getStatusClass(r.status)">{{ r.status | formatLabel }}</span></td>
         </tr>
         <tr *ngIf="data.length === 0"><td colspan="7"><div class="empty-state" style="padding:2rem;"><p>No aging tasks</p></div></td></tr>
       </tbody></table>
@@ -106,8 +106,8 @@
           <td class="text-sm text-muted">{{ r.project_number }}</td>
           <td class="font-medium text-sm">{{ r.title }}</td>
           <td class="text-sm">{{ r.owner_name }}</td>
-          <td class="text-sm">{{ r.status | titlecase }}</td>
-          <td><span class="badge" [class]="getPriorityClass(r.priority)">{{ r.priority | titlecase }}</span></td>
+          <td class="text-sm">{{ r.status | formatLabel }}</td>
+          <td><span class="badge" [class]="getPriorityClass(r.priority)">{{ r.priority | formatLabel }}</span></td>
           <td class="text-sm">{{ formatDate(r.end_date) }}</td>
           <td class="font-semibold">{{ r.total_tasks }}</td>
           <td class="font-semibold" style="color:var(--priority-low);">{{ r.completed_tasks }}</td>

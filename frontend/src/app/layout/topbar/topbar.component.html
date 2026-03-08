@@ -55,7 +55,7 @@
           <div>
             <div class="font-semibold">{{ auth.currentUser?.name }}</div>
             <div class="text-sm text-muted">{{ auth.currentUser?.email }}</div>
-            <div class="text-xs text-muted">{{ auth.currentUser?.role | titlecase }}</div>
+            <div class="text-xs text-muted">{{ auth.currentUser?.role | formatLabel }}</div>
           </div>
         </div>
         <div class="dropdown-divider"></div>

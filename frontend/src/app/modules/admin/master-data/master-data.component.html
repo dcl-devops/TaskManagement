@@ -1,6 +1,6 @@
 <div class="page-header">
   <h1>Master Data</h1>
-  <button class="btn btn-primary" (click)="showAdd = !showAdd" data-testid="add-master-btn">+ Add {{ activeTab | titlecase | slice:0:-1 }}</button>
+  <button class="btn btn-primary" (click)="showAdd = !showAdd" data-testid="add-master-btn">+ Add {{ activeTab | formatLabel | slice:0:-1 }}</button>
 </div>
 
 <div class="tabs-header" style="margin-bottom:1.5rem;background:var(--bg-card);border-radius:var(--radius-lg);border:1px solid var(--border-color);overflow:hidden;">

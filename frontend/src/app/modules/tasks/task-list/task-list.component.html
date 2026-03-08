@@ -74,13 +74,13 @@
           </div>
         </td>
         <td>
-          <span class="badge badge-category">{{ task.category | titlecase }}</span>
+          <span class="badge badge-category">{{ task.category | formatLabel }}</span>
         </td>
         <td class="text-sm">{{ task.assigned_to_name || '-' }}</td>
         <td class="text-sm">{{ task.assigned_by_name || '-' }}</td>
         <td class="text-sm">{{ task.department_name || '-' }}</td>
-        <td><span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | titlecase }}</span></td>
-        <td><span class="badge" [class]="getStatusClass(task.status)">{{ task.status | titlecase }}</span></td>
+        <td><span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | formatLabel }}</span></td>
+        <td><span class="badge" [class]="getStatusClass(task.status)">{{ task.status | formatLabel }}</span></td>
         <td class="text-sm" [class.text-danger]="isOverdue(task.due_date, task.status)">
           {{ formatDate(task.due_date) }}
         </td>

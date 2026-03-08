@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, TitleCasePipe } from '@angular/common';
+import { SharedModule } from '../shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MainLayoutComponent } from './main-layout/main-layout.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
@@ -26,6 +27,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [MainLayoutComponent, SidebarComponent, TopbarComponent, ToastComponent],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule.forChild(routes)]
+  imports: [CommonModule, SharedModule, FormsModule, ReactiveFormsModule, RouterModule.forChild(routes)]
 })
 export class LayoutModule {}

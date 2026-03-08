@@ -5,8 +5,8 @@
       <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
         <button class="btn btn-ghost btn-sm" routerLink="/projects">&#8592; Back</button>
         <span class="text-sm text-muted">{{ project.project_number }}</span>
-        <span class="badge" [class]="getPriorityClass(project.priority)">{{ project.priority | titlecase }}</span>
-        <span class="badge" [class]="getStatusClass(project.status)">{{ project.status | titlecase }}</span>
+        <span class="badge" [class]="getPriorityClass(project.priority)">{{ project.priority | formatLabel }}</span>
+        <span class="badge" [class]="getStatusClass(project.status)">{{ project.status | formatLabel }}</span>
       </div>
       <h1>{{ project.title }}</h1>
     </div>
@@ -50,7 +50,7 @@
           <span class="priority-dot" [class]="t.priority"></span>
           <span class="text-sm flex-1">{{ t.task_number }} - {{ t.title }}</span>
           <span class="text-sm text-muted">{{ t.assigned_to_name }}</span>
-          <span class="badge" [class]="'badge-' + t.status">{{ t.status | titlecase }}</span>
+          <span class="badge" [class]="('badge-' + t.status)">{{ t.status | formatLabel }}</span>
         </div>
         <div *ngIf="tasks.length === 0" class="empty-state" style="padding:1.5rem;"><p>No tasks in this project</p></div>
       </ng-container>
