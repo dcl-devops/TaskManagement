@@ -1,5 +1,5 @@
 .meetings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
-.meeting-card { padding: 1.25rem; background: var(--bg-secondary); border: 1px solid var(--border-color); transition: all var(--transition); &:hover { transform: translateY(-2px); border-color: var(--accent-blue); box-shadow: 0 4px 12px rgba(0,0,0,.15); } }
+.meeting-card { padding: 1.25rem; background: var(--bg-card); border: 1px solid var(--border-color); transition: all var(--transition); &:hover { transform: translateY(-2px); border-color: var(--accent-blue); box-shadow: 0 4px 12px rgba(0,0,0,.15); } }
 .meeting-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
 .meeting-num { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; color: var(--text-muted); }
 .meeting-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.625rem; line-height: 1.4; }
