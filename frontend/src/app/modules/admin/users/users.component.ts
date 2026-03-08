@@ -120,4 +120,20 @@ export class UsersComponent implements OnInit {
       next: () => { user.status = newStatus; this.toast.success(`User ${newStatus}`); this.cdr.detectChanges(); }
     });
   }
+
+  uploadAvatar(user: any, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const formData = new FormData();
+    formData.append('avatar', input.files[0]);
+    this.http.post<any>(`/api/admin/users/${user.id}/avatar`, formData).subscribe({
+      next: r => { user.avatar_url = r.avatar_url; this.toast.success('Photo uploaded'); this.cdr.detectChanges(); },
+      error: () => { this.toast.error('Upload failed'); }
+    });
+    input.value = '';
+  }
+
+  getInitials(name: string): string {
+    return (name || '').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
 }

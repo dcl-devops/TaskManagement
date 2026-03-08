@@ -28,7 +28,8 @@
   <!-- User -->
   <div class="sidebar-footer">
     <div class="user-info" *ngIf="auth.currentUser">
-      <div class="avatar avatar-sm">{{ getUserInitials() }}</div>
+      <img *ngIf="auth.currentUser.avatar_url" [src]="auth.currentUser.avatar_url" class="avatar avatar-sm avatar-img" />
+      <div class="avatar avatar-sm" *ngIf="!auth.currentUser.avatar_url">{{ getUserInitials() }}</div>
       <div class="user-details" *ngIf="!collapsed">
         <span class="user-name truncate">{{ auth.currentUser.name }}</span>
         <span class="user-role">{{ auth.currentUser.role | formatLabel }}</span>

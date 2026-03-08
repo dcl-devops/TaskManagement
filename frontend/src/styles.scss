@@ -38,8 +38,8 @@
 
   --status-open: #3b82f6;
   --status-open-bg: #eff6ff;
-  --status-progress: #8b5cf6;
-  --status-progress-bg: #f5f3ff;
+  --status-progress: #ca8a04;
+  --status-progress-bg: #fefce8;
   --status-hold: #f59e0b;
   --status-hold-bg: #fffbeb;
   --status-resolved: #10b981;
@@ -87,7 +87,7 @@ body.dark-theme {
   --priority-low-bg: #052e16;
 
   --status-open-bg: #1e3a5f;
-  --status-progress-bg: #2e1065;
+  --status-progress-bg: #422006;
   --status-hold-bg: #451a03;
   --status-resolved-bg: #064e3b;
   --status-closed-bg: #064e3b;
@@ -526,6 +526,7 @@ table {
   &.avatar-lg { width: 40px; height: 40px; font-size: 0.875rem; }
   &.avatar-xl { width: 48px; height: 48px; font-size: 1rem; }
   img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  &.avatar-img { object-fit: cover; background: none; }
 }
 
 /* ============ RESPONSIVE ============ */

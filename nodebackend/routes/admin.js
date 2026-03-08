@@ -1,17 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const path = require('path');
 const { pool } = require('../config/database');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
 const adminOnly = [requireAuth, requireRole('owner', 'admin')];
+
+const avatarStorage = multer.diskStorage({
+  destination: '/app/uploads/',
+  filename: (req, file, cb) => {
+    const unique = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'avatar-' + unique + path.extname(file.originalname));
+  }
+});
+const avatarUpload = multer({
+  storage: avatarStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).slice(1).toLowerCase();
+    if (/^(png|jpg|jpeg|webp)$/.test(ext)) cb(null, true);
+    else cb(new Error('Only image files allowed'));
+  }
+});
 
 // ===== USERS =====
 router.get('/users', requireAuth, async (req, res) => {
   const { company_id, location_id, department_id, role, status, search } = req.query;
   let query = `SELECT u.id, u.employee_code, u.name, u.email, u.mobile, u.role, u.status,
     u.force_password_change, u.created_at, u.department_id, u.location_id, u.company_id,
-    u.designation_id, u.manager_id,
+    u.designation_id, u.manager_id, u.avatar_url,
     d.name as department_name, l.name as location_name,
     c.name as company_name, des.name as designation_name, m.name as manager_name
     FROM users u
@@ -82,6 +101,20 @@ router.post('/users/:id/reset-password', adminOnly, async (req, res) => {
     await pool.query('UPDATE users SET password_hash=$1, force_password_change=true, updated_at=NOW() WHERE id=$2 AND org_id=$3', [hash, req.params.id, req.user.org_id]);
     res.json({ message: 'Password reset successfully' });
   } catch (err) { res.status(500).json({ message: 'Server error' }); }
+});
+
+// Upload avatar
+router.post('/users/:id/avatar', adminOnly, avatarUpload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    const avatarUrl = '/api/uploads/' + req.file.filename;
+    const result = await pool.query(
+      'UPDATE users SET avatar_url=$1, updated_at=NOW() WHERE id=$2 AND org_id=$3 RETURNING id, avatar_url',
+      [avatarUrl, req.params.id, req.user.org_id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });
+    res.json(result.rows[0]);
+  } catch (err) { console.error(err); res.status(500).json({ message: 'Upload failed' }); }
 });
 
 // ===== COMPANIES =====

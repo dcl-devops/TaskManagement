@@ -152,7 +152,8 @@
           <div class="detail-row">
             <span class="detail-label">Assigned To</span>
             <div class="detail-value">
-              <div class="avatar avatar-sm">{{ getInitials(task.assigned_to_name) }}</div>
+              <img *ngIf="task.assigned_to_avatar" [src]="task.assigned_to_avatar" class="avatar avatar-sm avatar-img" />
+              <div class="avatar avatar-sm" *ngIf="!task.assigned_to_avatar">{{ getInitials(task.assigned_to_name) }}</div>
               {{ task.assigned_to_name || '-' }}
             </div>
           </div>

@@ -47,11 +47,13 @@
     <!-- User Menu -->
     <div class="dropdown-wrapper">
       <button class="avatar-btn" (click)="toggleUserMenu()" data-testid="user-menu-btn">
-        <div class="avatar">{{ getUserInitials() }}</div>
+        <img *ngIf="auth.currentUser?.avatar_url" [src]="auth.currentUser?.avatar_url" class="avatar avatar-img" />
+        <div class="avatar" *ngIf="!auth.currentUser?.avatar_url">{{ getUserInitials() }}</div>
       </button>
       <div class="dropdown user-dropdown" *ngIf="showUserMenu">
         <div class="user-info-header">
-          <div class="avatar avatar-lg">{{ getUserInitials() }}</div>
+          <img *ngIf="auth.currentUser?.avatar_url" [src]="auth.currentUser?.avatar_url" class="avatar avatar-lg avatar-img" />
+          <div class="avatar avatar-lg" *ngIf="!auth.currentUser?.avatar_url">{{ getUserInitials() }}</div>
           <div>
             <div class="font-semibold">{{ auth.currentUser?.name }}</div>
             <div class="text-sm text-muted">{{ auth.currentUser?.email }}</div>

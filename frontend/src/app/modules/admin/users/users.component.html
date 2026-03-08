@@ -43,7 +43,8 @@
         <td class="text-sm text-muted">{{ u.employee_code || '-' }}</td>
         <td>
           <div style="display:flex;align-items:center;gap:.625rem;">
-            <div class="avatar avatar-sm">{{ u.name?.charAt(0) }}</div>
+            <div class="avatar avatar-sm" *ngIf="!u.avatar_url">{{ getInitials(u.name) }}</div>
+            <img *ngIf="u.avatar_url" [src]="u.avatar_url" class="avatar avatar-sm avatar-img" />
             <span class="font-medium text-sm">{{ u.name }}</span>
           </div>
         </td>
@@ -58,8 +59,12 @@
           </span>
         </td>
         <td>
-          <div style="display:flex;gap:.5rem;">
+          <div style="display:flex;gap:.5rem;align-items:center;">
             <button class="btn btn-ghost btn-sm btn-icon" (click)="editUser(u)" title="Edit" data-testid="edit-user-btn">&#9998;</button>
+            <label class="btn btn-ghost btn-sm btn-icon" [title]="'Upload photo'" style="cursor:pointer;margin:0;">
+              &#128247;
+              <input type="file" accept="image/*" (change)="uploadAvatar(u, $event)" style="display:none;" />
+            </label>
             <button class="btn btn-ghost btn-sm" (click)="toggleStatus(u)" [title]="u.status === 'active' ? 'Deactivate' : 'Activate'">
               {{ u.status === 'active' ? 'Deactivate' : 'Activate' }}
             </button>

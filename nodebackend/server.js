@@ -12,6 +12,7 @@ app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('/app/uploads'));
+app.use('/api/uploads', express.static('/app/uploads'));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
