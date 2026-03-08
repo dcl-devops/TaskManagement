@@ -189,7 +189,7 @@ router.post('/:id/comments', requireAuth, async (req, res) => {
     [req.params.id, req.user.id, comment]
   );
   await logActivity(req.params.id, req.user.id, 'Comment added', null, comment.substring(0, 50));
-  res.status(201).json({ ...result.rows[0], user_name: req.user.name });
+  res.status(201).json({ ...result.rows[0], user_name: req.user.name, avatar_url: req.user.avatar_url });
 });
 
 // ===== ATTACHMENTS =====

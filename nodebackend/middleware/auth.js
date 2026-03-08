@@ -11,8 +11,13 @@ function requireAuth(req, res, next) {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
+    pool.query('SELECT id, name, email, role, org_id, avatar_url FROM users WHERE id = $1', [decoded.id])
+      .then(result => {
+        if (result.rows.length === 0) return res.status(401).json({ message: 'User not found' });
+        req.user = result.rows[0];
+        next();
+      })
+      .catch(() => res.status(500).json({ message: 'Auth error' }));
   } catch (err) {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }

@@ -21,11 +21,21 @@
       </div>
       <div class="form-group">
         <label>Members</label>
-        <div class="members-list">
-          <div *ngFor="let u of users" class="member-row" (click)="toggleMember(u)" [class.selected]="isMember(u.id)">
-            <div class="avatar avatar-sm">{{ u.name?.charAt(0) }}</div>
-            <span class="text-sm">{{ u.name }}</span>
-            <span *ngIf="isMember(u.id)" style="margin-left:auto;color:var(--accent-blue);">&#10003;</span>
+        <div class="member-search-wrap">
+          <input type="text" [(ngModel)]="memberSearch" [ngModelOptions]="{standalone: true}" placeholder="Type to search members..." class="member-search-input" data-testid="member-search" />
+          <div class="member-search-results" *ngIf="memberSearch.length >= 1 && filteredUsers.length > 0">
+            <div *ngFor="let u of filteredUsers" class="member-search-item" (click)="addMember(u)">
+              <img *ngIf="u.avatar_url" [src]="u.avatar_url" class="avatar avatar-sm avatar-img" />
+              <div class="avatar avatar-sm" *ngIf="!u.avatar_url">{{ u.name?.charAt(0) }}</div>
+              <span class="text-sm">{{ u.name }}</span>
+              <span class="text-xs text-muted">{{ u.email }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="selected-members" *ngIf="selectedMembers.length > 0">
+          <div *ngFor="let m of selectedMembers" class="member-chip">
+            <span>{{ m.name }}</span>
+            <button class="chip-remove" (click)="removeMember(m)">&times;</button>
           </div>
         </div>
       </div>
@@ -40,6 +50,13 @@
           <select formControlName="owner_id" data-testid="meeting-owner">
             <option [value]="null">Select owner</option>
             <option *ngFor="let u of users" [value]="u.id">{{ u.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Project</label>
+          <select formControlName="project_id">
+            <option [value]="null">No project</option>
+            <option *ngFor="let p of projects" [value]="p.id">{{ p.title }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -63,7 +80,7 @@
             <option value="open">Open</option>
             <option value="in_progress">In Progress</option>
             <option value="recurring">Recurring</option>
-            <option value="closed">Closed</option>
+            <option value="closed">Completed</option>
           </select>
         </div>
       </div>

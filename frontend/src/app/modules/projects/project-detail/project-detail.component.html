@@ -12,6 +12,7 @@
     </div>
     <div class="header-actions">
       <a [routerLink]="['/tasks/new']" [queryParams]="{project: projId, category: 'project'}" class="btn btn-secondary btn-sm">+ Add Task</a>
+      <a [routerLink]="['/meetings/new']" [queryParams]="{project_id: projId}" class="btn btn-secondary btn-sm">+ Add Meeting</a>
       <a [routerLink]="['/projects', projId, 'edit']" class="btn btn-primary btn-sm">Edit Project</a>
     </div>
   </div>
@@ -41,6 +42,7 @@
   <div class="card">
     <div class="tabs-header">
       <button class="tab-btn" [class.active]="activeTab === 'tasks'" (click)="activeTab='tasks'">Tasks ({{ tasks.length }})</button>
+      <button class="tab-btn" [class.active]="activeTab === 'meetings'" (click)="activeTab='meetings'">Meetings ({{ project.meetings?.length || 0 }})</button>
       <button class="tab-btn" [class.active]="activeTab === 'updates'" (click)="activeTab='updates'">Updates ({{ updates.length }})</button>
       <button class="tab-btn" [class.active]="activeTab === 'members'" (click)="activeTab='members'">Members ({{ project.members?.length }})</button>
     </div>
@@ -53,6 +55,18 @@
           <span class="badge" [class]="('badge-' + t.status)">{{ t.status | formatLabel }}</span>
         </div>
         <div *ngIf="tasks.length === 0" class="empty-state" style="padding:1.5rem;"><p>No tasks in this project</p></div>
+      </ng-container>
+      <ng-container *ngIf="activeTab === 'meetings'">
+        <div *ngFor="let m of project.meetings" [routerLink]="['/meetings', m.id]" style="display:flex;align-items:center;gap:.75rem;padding:.625rem;border-bottom:1px solid var(--border-color);cursor:pointer;" class="task-row">
+          <span class="text-sm text-muted">{{ m.meeting_number }}</span>
+          <span class="text-sm flex-1 font-medium">{{ m.title }}</span>
+          <span class="text-xs text-muted">{{ formatDate(m.meeting_date) }}</span>
+          <span class="badge" [class]="('badge-' + m.status)">{{ m.status | formatLabel }}</span>
+        </div>
+        <div *ngIf="!project.meetings?.length" class="empty-state" style="padding:1.5rem;">
+          <p>No meetings linked to this project</p>
+          <a [routerLink]="['/meetings/new']" [queryParams]="{project_id: projId}" class="btn btn-secondary btn-sm" style="margin-top:.5rem;">+ Create Meeting</a>
+        </div>
       </ng-container>
       <ng-container *ngIf="activeTab === 'updates'">
         <div *ngFor="let u of updates" style="display:flex;gap:.75rem;margin-bottom:1rem;">
@@ -70,7 +84,8 @@
       <ng-container *ngIf="activeTab === 'members'">
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem;">
           <div *ngFor="let m of project.members" style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:var(--bg-secondary);border-radius:var(--radius);">
-            <div class="avatar">{{ getInitials(m.name) }}</div>
+            <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="avatar avatar-img" />
+            <div class="avatar" *ngIf="!m.avatar_url">{{ getInitials(m.name) }}</div>
             <div><div class="font-medium text-sm">{{ m.name }}</div><div class="text-xs text-muted">{{ m.email }}</div></div>
           </div>
         </div>

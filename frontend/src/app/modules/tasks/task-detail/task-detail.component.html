@@ -63,7 +63,8 @@
         <div class="tab-content" *ngIf="activeTab === 'comments'">
           <div class="comments-list">
             <div class="comment-item" *ngFor="let c of comments">
-              <div class="avatar avatar-sm">{{ getInitials(c.user_name) }}</div>
+              <img *ngIf="c.avatar_url" [src]="c.avatar_url" class="avatar avatar-sm avatar-img" />
+              <div class="avatar avatar-sm" *ngIf="!c.avatar_url">{{ getInitials(c.user_name) }}</div>
               <div class="comment-body">
                 <div class="comment-header">
                   <span class="font-medium text-sm">{{ c.user_name }}</span>
@@ -77,7 +78,8 @@
             </div>
           </div>
           <div class="comment-input-area">
-            <div class="avatar avatar-sm">{{ getInitials(auth.currentUser?.name || '') }}</div>
+            <img *ngIf="auth.currentUser?.avatar_url" [src]="auth.currentUser?.avatar_url" class="avatar avatar-sm avatar-img" />
+            <div class="avatar avatar-sm" *ngIf="!auth.currentUser?.avatar_url">{{ getInitials(auth.currentUser?.name || '') }}</div>
             <div class="comment-input-wrap">
               <textarea [(ngModel)]="newComment" placeholder="Add a comment..." rows="3" data-testid="comment-input"></textarea>
               <button class="btn btn-primary btn-sm" (click)="addComment()" [disabled]="savingComment || !newComment.trim()" data-testid="submit-comment">
@@ -129,7 +131,8 @@
         <div class="tab-content" *ngIf="activeTab === 'activity'">
           <div class="activity-list">
             <div class="activity-item" *ngFor="let a of activities">
-              <div class="avatar avatar-sm">{{ getInitials(a.user_name) }}</div>
+              <img *ngIf="a.avatar_url" [src]="a.avatar_url" class="avatar avatar-sm avatar-img" />
+              <div class="avatar avatar-sm" *ngIf="!a.avatar_url">{{ getInitials(a.user_name) }}</div>
               <div class="activity-body">
                 <span class="font-medium text-sm">{{ a.user_name }}</span>
                 <span class="text-sm text-secondary"> {{ a.action }}</span>
@@ -159,7 +162,11 @@
           </div>
           <div class="detail-row">
             <span class="detail-label">Assigned By</span>
-            <span class="detail-value">{{ task.assigned_by_name || '-' }}</span>
+            <div class="detail-value">
+              <img *ngIf="task.assigned_by_avatar" [src]="task.assigned_by_avatar" class="avatar avatar-sm avatar-img" />
+              <div class="avatar avatar-sm" *ngIf="!task.assigned_by_avatar">{{ getInitials(task.assigned_by_name) }}</div>
+              {{ task.assigned_by_name || '-' }}
+            </div>
           </div>
           <div class="detail-row">
             <span class="detail-label">Department</span>

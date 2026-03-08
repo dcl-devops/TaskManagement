@@ -22,6 +22,7 @@
     <div><span class="text-xs text-muted">Location</span><div class="font-medium text-sm">{{ meeting.location_name || (meeting.virtual_link ? 'Virtual' : '-') }}</div></div>
     <div><span class="text-xs text-muted">Members</span><div class="font-medium text-sm">{{ meeting.member_count }}</div></div>
     <div><span class="text-xs text-muted">Tasks</span><div class="font-medium text-sm">{{ meeting.task_count }}</div></div>
+    <div *ngIf="meeting.project_title"><span class="text-xs text-muted">Project</span><div class="font-medium text-sm"><a [routerLink]="['/projects', meeting.project_id]" style="color:var(--primary);text-decoration:none;">{{ meeting.project_title }}</a></div></div>
   </div>
 
   <div class="card">
@@ -89,7 +90,8 @@
       <ng-container *ngIf="activeTab === 'members'">
         <div class="members-grid">
           <div *ngFor="let m of meeting.members" class="member-card" style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:var(--bg-secondary);border-radius:var(--radius);">
-            <div class="avatar">{{ getInitials(m.name) }}</div>
+            <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="avatar avatar-img" />
+            <div class="avatar" *ngIf="!m.avatar_url">{{ getInitials(m.name) }}</div>
             <div>
               <div class="font-medium text-sm">{{ m.name }}</div>
               <div class="text-xs text-muted">{{ m.email }}</div>

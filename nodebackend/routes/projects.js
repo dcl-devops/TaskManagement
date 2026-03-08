@@ -41,6 +41,11 @@ router.get('/:id', requireAuth, async (req, res) => {
       [req.params.id]
     );
     project.members = members.rows;
+    const meetings = await pool.query(
+      `SELECT m.id, m.meeting_number, m.title, m.meeting_date, m.status FROM meetings m WHERE m.project_id = $1 ORDER BY m.meeting_date DESC`,
+      [req.params.id]
+    );
+    project.meetings = meetings.rows;
     project.progress = project.total_tasks > 0 ? Math.round((project.completed_tasks / project.total_tasks) * 100) : 0;
     res.json(project);
   } catch (err) { res.status(500).json({ message: 'Server error' }); }
@@ -122,7 +127,7 @@ router.post('/:id/updates', requireAuth, async (req, res) => {
     'INSERT INTO project_updates(project_id, user_id, remark) VALUES($1,$2,$3) RETURNING *',
     [req.params.id, req.user.id, remark]
   );
-  res.status(201).json({ ...r.rows[0], user_name: req.user.name });
+  res.status(201).json({ ...r.rows[0], user_name: req.user.name, avatar_url: req.user.avatar_url });
 });
 
 module.exports = router;
