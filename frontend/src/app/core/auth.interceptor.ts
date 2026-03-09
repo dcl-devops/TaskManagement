@@ -10,14 +10,18 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private auth: AuthService, private router: Router) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.auth.token;
     let cloned = req;
-    if (token) {
-      cloned = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+    // Don't overwrite Authorization header if already set (e.g. superadmin requests)
+    if (!req.headers.has('Authorization')) {
+      const token = this.auth.token;
+      if (token) {
+        cloned = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+      }
     }
     return next.handle(cloned).pipe(
       catchError((err: HttpErrorResponse) => {
-        if (err.status === 401) {
+        // Only auto-logout for non-superadmin routes
+        if (err.status === 401 && !req.url.includes('/superadmin/')) {
           this.auth.logout();
         }
         return throwError(() => err);
