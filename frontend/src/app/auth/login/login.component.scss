@@ -5,7 +5,8 @@
 
 .auth-brand {
   flex: 1;
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+  background: linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(30,58,95,0.8) 50%, rgba(15,23,42,0.9) 100%),
+              url('https://images.unsplash.com/photo-1462556791646-c201b8241a94?w=1200&q=80') center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,7 +18,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at top right, rgba(37,99,235,0.2) 0%, transparent 60%);
+    background: radial-gradient(ellipse at top right, rgba(37,99,235,0.25) 0%, transparent 60%);
     pointer-events: none;
   }
 
