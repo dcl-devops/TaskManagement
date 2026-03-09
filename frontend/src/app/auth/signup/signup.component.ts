@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
@@ -15,7 +15,7 @@ export class SignupComponent {
   error = '';
   showPassword = false;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router, private cdr: ChangeDetectorRef) {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       orgName: ['', [Validators.required, Validators.minLength(2)]],
@@ -35,6 +35,7 @@ export class SignupComponent {
       error: (err) => {
         this.error = err.error?.message || 'Signup failed';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
