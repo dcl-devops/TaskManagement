@@ -57,7 +57,7 @@ export class MeetingListComponent implements OnInit {
     const params: any = {};
     if (this.search) params['search'] = this.search;
     if (this.statusFilter) params['status'] = this.statusFilter;
-    this.http.get<any[]>('/api/meetings', { params }).subscribe({ next: r => { this.meetings = r; this.loading = false; this.cdr.detectChanges(); }, error: () => this.loading = false });
+    this.http.get<any[]>('/api/meetings', { params }).subscribe({ next: r => { this.meetings = r; this.loading = false; this.cdr.detectChanges(); }, error: () => { this.loading = false; this.cdr.detectChanges(); } });
   }
   open(id: number): void { this.router.navigate(['/meetings', id]); }
   formatDate(d: string): string { return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); }

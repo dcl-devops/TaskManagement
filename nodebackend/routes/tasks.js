@@ -5,6 +5,8 @@ const path = require('path');
 const { pool } = require('../config/database');
 const { requireAuth, getVisibleUserIds } = require('../middleware/auth');
 
+function cleanInt(v) { if (v === null || v === undefined || v === '' || v === 'null') return null; const n = parseInt(v); return isNaN(n) ? null : n; }
+
 const storage = multer.diskStorage({
   destination: '/app/uploads/',
   filename: (req, file, cb) => {
@@ -116,10 +118,10 @@ router.post('/', requireAuth, async (req, res) => {
        parent_task_id, meeting_id, project_id, created_by)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING *`,
       [req.user.org_id, taskNum, category||'task', title, description||null,
-       assigned_by||req.user.id, assigned_to||req.user.id,
-       department_id||null, location_id||null, start_date||null, due_date||null,
+       cleanInt(assigned_by)||req.user.id, cleanInt(assigned_to)||req.user.id,
+       cleanInt(department_id), cleanInt(location_id), start_date||null, due_date||null,
        priority||'medium', tags||null, estimated_effort||null,
-       parent_task_id||null, meeting_id||null, project_id||null, req.user.id]
+       cleanInt(parent_task_id), cleanInt(meeting_id), cleanInt(project_id), req.user.id]
     );
     const task = result.rows[0];
     await logActivity(task.id, req.user.id, 'Task created', null, title);
@@ -144,7 +146,7 @@ router.put('/:id', requireAuth, async (req, res) => {
        due_date=$6, priority=$7, status=$8, resolution_summary=$9, completion_date=$10, tags=$11,
        estimated_effort=$12, actual_effort=$13, is_pinned=$14, updated_at=NOW()
        WHERE id=$15 AND org_id=$16 RETURNING *`,
-      [title, description, assigned_to, department_id, location_id, due_date||null, priority,
+      [title, description, cleanInt(assigned_to), cleanInt(department_id), cleanInt(location_id), due_date||null, priority,
        status, resolution_summary||null, completion_date||null, tags||null,
        estimated_effort||null, actual_effort||null, is_pinned||false, id, req.user.org_id]
     );

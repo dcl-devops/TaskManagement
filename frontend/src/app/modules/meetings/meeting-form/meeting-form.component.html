@@ -48,15 +48,15 @@
         <div class="form-group">
           <label>Owner *</label>
           <select formControlName="owner_id" data-testid="meeting-owner">
-            <option [value]="null">Select owner</option>
-            <option *ngFor="let u of users" [value]="u.id">{{ u.name }}</option>
+            <option [ngValue]="null">Select owner</option>
+            <option *ngFor="let u of users" [ngValue]="u.id">{{ u.name }}</option>
           </select>
         </div>
         <div class="form-group">
           <label>Project</label>
           <select formControlName="project_id">
-            <option [value]="null">No project</option>
-            <option *ngFor="let p of projects" [value]="p.id">{{ p.title }}</option>
+            <option [ngValue]="null">No project</option>
+            <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.title }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -66,8 +66,8 @@
         <div class="form-group">
           <label>Location</label>
           <select formControlName="location_id">
-            <option [value]="null">Select location</option>
-            <option *ngFor="let l of locations" [value]="l.id">{{ l.name }}</option>
+            <option [ngValue]="null">Select location</option>
+            <option *ngFor="let l of locations" [ngValue]="l.id">{{ l.name }}</option>
           </select>
         </div>
         <div class="form-group">

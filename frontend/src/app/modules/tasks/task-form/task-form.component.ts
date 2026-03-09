@@ -103,7 +103,7 @@ export class TaskFormComponent implements OnInit {
         this.form.get('start_date')?.disable();
         this.loading = false; this.cdr.detectChanges();
       },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 

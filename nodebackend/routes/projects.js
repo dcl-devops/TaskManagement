@@ -3,6 +3,8 @@ const router = express.Router();
 const { pool } = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
 
+function cleanInt(v) { if (v === null || v === undefined || v === '' || v === 'null') return null; const n = parseInt(v); return isNaN(n) ? null : n; }
+
 const PRJ_SELECT = `SELECT p.*, 
   u.name as owner_name, d.name as department_name, l.name as location_name,
   cb.name as created_by_name,
@@ -62,8 +64,8 @@ router.post('/', requireAuth, async (req, res) => {
     const result = await client.query(
       `INSERT INTO projects(org_id, project_number, title, description, owner_id, department_id, location_id, start_date, end_date, priority, status, created_by)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
-      [req.user.org_id, prjNum, title, description||null, owner_id||req.user.id,
-       department_id||null, location_id||null, start_date||null, end_date||null,
+      [req.user.org_id, prjNum, title, description||null, cleanInt(owner_id)||req.user.id,
+       cleanInt(department_id), cleanInt(location_id), start_date||null, end_date||null,
        priority||'medium', status||'active', req.user.id]
     );
     const project = result.rows[0];
@@ -89,7 +91,7 @@ router.put('/:id', requireAuth, async (req, res) => {
       `UPDATE projects SET title=$1, description=$2, owner_id=$3, department_id=$4, location_id=$5,
        start_date=$6, end_date=$7, priority=$8, status=$9, updated_at=NOW()
        WHERE id=$10 AND org_id=$11 RETURNING *`,
-      [title, description||null, owner_id, department_id||null, location_id||null,
+      [title, description||null, cleanInt(owner_id), cleanInt(department_id), cleanInt(location_id),
        start_date||null, end_date||null, priority, status, req.params.id, req.user.org_id]
     );
     if (member_ids !== undefined) {

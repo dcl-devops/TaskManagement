@@ -20,9 +20,18 @@ export class ProjectDetailComponent implements OnInit {
   constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private toast: ToastService, public auth: AuthService, private cdr: ChangeDetectorRef) {}
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];
-    this.http.get<any>(`/api/projects/${id}`).subscribe({ next: p => { this.project = p; this.loading = false; this.cdr.detectChanges(); } });
-    this.http.get<any[]>(`/api/projects/${id}/updates`).subscribe({ next: r => { this.updates = r; this.cdr.detectChanges(); } });
-    this.http.get<any[]>('/api/tasks', { params: { project_id: String(id) } }).subscribe({ next: r => { this.tasks = r; this.cdr.detectChanges(); } });
+    this.http.get<any>(`/api/projects/${id}`).subscribe({
+      next: p => { this.project = p; this.loading = false; this.cdr.detectChanges(); },
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
+    });
+    this.http.get<any[]>(`/api/projects/${id}/updates`).subscribe({
+      next: r => { this.updates = r; this.cdr.detectChanges(); },
+      error: () => {}
+    });
+    this.http.get<any[]>('/api/tasks', { params: { project_id: String(id) } }).subscribe({
+      next: r => { this.tasks = r; this.cdr.detectChanges(); },
+      error: () => {}
+    });
   }
   get projId(): number { return this.route.snapshot.params['id']; }
   addUpdate(): void {

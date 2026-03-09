@@ -55,7 +55,7 @@ export class TaskListComponent implements OnInit {
     if (this.filters.project_id) params['project_id'] = this.filters.project_id;
     this.http.get<any[]>('/api/tasks', { params }).subscribe({
       next: data => { this.tasks = data; this.loading = false; this.cdr.detectChanges(); },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 

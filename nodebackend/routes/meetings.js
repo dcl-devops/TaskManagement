@@ -3,6 +3,8 @@ const router = express.Router();
 const { pool } = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
 
+function cleanInt(v) { if (v === null || v === undefined || v === '' || v === 'null') return null; const n = parseInt(v); return isNaN(n) ? null : n; }
+
 const MTG_SELECT = `SELECT m.*, 
   u.name as owner_name, l.name as location_name,
   cb.name as created_by_name, p.title as project_title,
@@ -54,7 +56,7 @@ router.post('/', requireAuth, async (req, res) => {
     const result = await client.query(
       `INSERT INTO meetings(org_id, meeting_number, title, description, owner_id, meeting_date, location_id, virtual_link, status, created_by, project_id)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
-      [req.user.org_id, meetNum, title, description||null, owner_id||req.user.id, meeting_date, location_id||null, virtual_link||null, status||'open', req.user.id, project_id||null]
+      [req.user.org_id, meetNum, title, description||null, cleanInt(owner_id)||req.user.id, meeting_date, cleanInt(location_id), virtual_link||null, status||'open', req.user.id, cleanInt(project_id)]
     );
     const meeting = result.rows[0];
     if (member_ids && member_ids.length > 0) {
@@ -79,7 +81,7 @@ router.put('/:id', requireAuth, async (req, res) => {
       `UPDATE meetings SET title=$1, description=$2, owner_id=$3, meeting_date=$4,
        location_id=$5, virtual_link=$6, status=$7, project_id=$8, updated_at=NOW()
        WHERE id=$9 AND org_id=$10 RETURNING *`,
-      [title, description||null, owner_id, meeting_date, location_id||null, virtual_link||null, status, project_id||null, req.params.id, req.user.org_id]
+      [title, description||null, cleanInt(owner_id), meeting_date, cleanInt(location_id), virtual_link||null, status, cleanInt(project_id), req.params.id, req.user.org_id]
     );
     if (member_ids !== undefined) {
       await client.query('DELETE FROM meeting_members WHERE meeting_id=$1', [req.params.id]);

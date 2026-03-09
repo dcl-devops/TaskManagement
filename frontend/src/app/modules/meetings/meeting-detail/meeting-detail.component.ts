@@ -24,10 +24,22 @@ export class MeetingDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];
-    this.http.get<any>(`/api/meetings/${id}`).subscribe({ next: m => { this.meeting = m; this.loading = false; this.cdr.detectChanges(); } });
-    this.http.get<any[]>(`/api/meetings/${id}/updates`).subscribe({ next: r => { this.updates = r; this.cdr.detectChanges(); } });
-    this.http.get<any[]>(`/api/meetings/${id}/mom`).subscribe({ next: r => { this.moms = r; this.cdr.detectChanges(); } });
-    this.http.get<any[]>('/api/tasks', { params: { meeting_id: String(id) } }).subscribe({ next: r => { this.tasks = r; this.cdr.detectChanges(); } });
+    this.http.get<any>(`/api/meetings/${id}`).subscribe({
+      next: m => { this.meeting = m; this.loading = false; this.cdr.detectChanges(); },
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
+    });
+    this.http.get<any[]>(`/api/meetings/${id}/updates`).subscribe({
+      next: r => { this.updates = r; this.cdr.detectChanges(); },
+      error: () => {}
+    });
+    this.http.get<any[]>(`/api/meetings/${id}/mom`).subscribe({
+      next: r => { this.moms = r; this.cdr.detectChanges(); },
+      error: () => {}
+    });
+    this.http.get<any[]>('/api/tasks', { params: { meeting_id: String(id) } }).subscribe({
+      next: r => { this.tasks = r; this.cdr.detectChanges(); },
+      error: () => {}
+    });
   }
 
   get meetingId(): number { return this.route.snapshot.params['id']; }

@@ -45,9 +45,9 @@ import { ToastService } from '../../../core/toast.service';
   <div class="card">
     <div style="padding:.75rem 1.25rem;font-size:.875rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-color);">Details</div>
     <div style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;">
-      <div class="form-group"><label>Owner *</label><select formControlName="owner_id"><option [value]="null">Select</option><option *ngFor="let u of users" [value]="u.id">{{ u.name }}</option></select></div>
-      <div class="form-group"><label>Department</label><select formControlName="department_id"><option [value]="null">Select</option><option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option></select></div>
-      <div class="form-group"><label>Location</label><select formControlName="location_id"><option [value]="null">Select</option><option *ngFor="let l of locations" [value]="l.id">{{ l.name }}</option></select></div>
+      <div class="form-group"><label>Owner *</label><select formControlName="owner_id"><option [ngValue]="null">Select</option><option *ngFor="let u of users" [ngValue]="u.id">{{ u.name }}</option></select></div>
+      <div class="form-group"><label>Department</label><select formControlName="department_id"><option [ngValue]="null">Select</option><option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option></select></div>
+      <div class="form-group"><label>Location</label><select formControlName="location_id"><option [ngValue]="null">Select</option><option *ngFor="let l of locations" [ngValue]="l.id">{{ l.name }}</option></select></div>
       <div class="form-group"><label>Start Date</label><input type="date" formControlName="start_date" /></div>
       <div class="form-group"><label>End Date</label><input type="date" formControlName="end_date" /></div>
       <div class="form-group"><label>Priority</label><select formControlName="priority"><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>

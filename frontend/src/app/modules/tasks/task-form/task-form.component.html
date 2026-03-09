@@ -27,24 +27,24 @@
       <div class="form-group" *ngIf="showParentTask" style="margin-bottom:1.25rem;">
         <label>Parent Task *</label>
         <select formControlName="parent_task_id" data-testid="parent-task">
-          <option [value]="null">Select parent task</option>
-          <option *ngFor="let t of tasks" [value]="t.id">{{ t.task_number }} - {{ t.title }}</option>
+          <option [ngValue]="null">Select parent task</option>
+          <option *ngFor="let t of tasks" [ngValue]="t.id">{{ t.task_number }} - {{ t.title }}</option>
         </select>
       </div>
 
       <div class="form-group" *ngIf="showMeeting" style="margin-bottom:1.25rem;">
         <label>Meeting</label>
         <select formControlName="meeting_id" data-testid="task-meeting">
-          <option [value]="null">Select meeting</option>
-          <option *ngFor="let m of meetings" [value]="m.id">{{ m.meeting_number }} - {{ m.title }}</option>
+          <option [ngValue]="null">Select meeting</option>
+          <option *ngFor="let m of meetings" [ngValue]="m.id">{{ m.meeting_number }} - {{ m.title }}</option>
         </select>
       </div>
 
       <div class="form-group" *ngIf="showProject" style="margin-bottom:1.25rem;">
         <label>Project</label>
         <select formControlName="project_id" data-testid="task-project">
-          <option [value]="null">Select project</option>
-          <option *ngFor="let p of projects" [value]="p.id">{{ p.project_number }} - {{ p.title }}</option>
+          <option [ngValue]="null">Select project</option>
+          <option *ngFor="let p of projects" [ngValue]="p.id">{{ p.project_number }} - {{ p.title }}</option>
         </select>
       </div>
 
@@ -73,30 +73,30 @@
         <div class="form-group">
           <label>Assign To *</label>
           <select formControlName="assigned_to" data-testid="task-assign-to">
-            <option [value]="null">Select user</option>
-            <option *ngFor="let u of users" [value]="u.id">{{ u.name }}</option>
+            <option [ngValue]="null">Select user</option>
+            <option *ngFor="let u of users" [ngValue]="u.id">{{ u.name }}</option>
           </select>
           <span class="error-msg" *ngIf="form.get('assigned_to')?.touched && form.get('assigned_to')?.invalid">Required</span>
         </div>
         <div class="form-group">
           <label>Assigned By</label>
           <select formControlName="assigned_by" data-testid="task-assign-by">
-            <option [value]="null">Select user</option>
-            <option *ngFor="let u of users" [value]="u.id">{{ u.name }}</option>
+            <option [ngValue]="null">Select user</option>
+            <option *ngFor="let u of users" [ngValue]="u.id">{{ u.name }}</option>
           </select>
         </div>
         <div class="form-group">
           <label>Department</label>
           <select formControlName="department_id" data-testid="task-dept">
-            <option [value]="null">Select department</option>
-            <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+            <option [ngValue]="null">Select department</option>
+            <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option>
           </select>
         </div>
         <div class="form-group">
           <label>Location</label>
           <select formControlName="location_id" data-testid="task-location">
-            <option [value]="null">Select location</option>
-            <option *ngFor="let l of locations" [value]="l.id">{{ l.name }}</option>
+            <option [ngValue]="null">Select location</option>
+            <option *ngFor="let l of locations" [ngValue]="l.id">{{ l.name }}</option>
           </select>
         </div>
       </div>

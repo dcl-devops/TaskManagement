@@ -65,7 +65,7 @@ export class ProjectListComponent implements OnInit {
     const params: any = {};
     if (this.search) params['search'] = this.search;
     if (this.statusFilter) params['status'] = this.statusFilter;
-    this.http.get<any[]>('/api/projects', { params }).subscribe({ next: r => { this.projects = r; this.loading = false; this.cdr.detectChanges(); }, error: () => this.loading = false });
+    this.http.get<any[]>('/api/projects', { params }).subscribe({ next: r => { this.projects = r; this.loading = false; this.cdr.detectChanges(); }, error: () => { this.loading = false; this.cdr.detectChanges(); } });
   }
   open(id: number): void { this.router.navigate(['/projects', id]); }
   getProgress(p: any): number { return p.total_tasks > 0 ? Math.round((p.completed_tasks / p.total_tasks) * 100) : 0; }
