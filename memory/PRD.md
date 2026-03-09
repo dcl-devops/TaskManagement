@@ -4,7 +4,7 @@
 Build a professional, enterprise-grade, multi-tenant SaaS Task Management Web Application that is easy to use, clean, fast, and hierarchical, allowing leaders to monitor work across reporting structures.
 
 ## Tech Stack
-- **Frontend:** Angular 21 (port 3000)
+- **Frontend:** Angular 21 (port 3000, production build)
 - **Backend:** Node.js/Express (port 8002) behind FastAPI proxy (port 8001)
 - **Database:** PostgreSQL 15
 - **Architecture:** Multi-tenant SaaS with RBAC
@@ -30,16 +30,25 @@ Build a professional, enterprise-grade, multi-tenant SaaS Task Management Web Ap
 - [x] In-app Notifications
 - [x] Calendar View (Tasks + Meetings)
 - [x] Reports (Overdue tasks, Task Aging, User Productivity, Department Performance, Project Progress)
+- [x] Super Admin Panel (Platform analytics, Organization management)
+
+### Bug Fixes (Mar 9, 2026)
+- [x] Fixed meeting creation failing due to [value]="null" sending string "null" to backend
+- [x] Fixed project creation - projects now appear in list without page refresh
+- [x] Fixed project detail infinite loading - added error handlers
+- [x] Fixed slow loading across all screens - added cdr.detectChanges() in error handlers
+- [x] Added cleanInt() backend sanitizer for robust integer field handling
 
 ### Remaining/Future (P2)
 - [ ] Email Notifications
 - [ ] Advanced filters saving & column customization
 - [ ] Rich text editor for task/meeting descriptions
 - [ ] Export reports to Excel
-- [ ] Full Organization Signup with domain validation
-- [ ] User Profile management with avatar upload
+- [ ] User Profile management with avatar upload improvements
 - [ ] WhatsApp notifications (deferred)
 - [ ] PowerBI integration readiness
+- [ ] Refactor type-to-search member selection into reusable shared component
+- [ ] Improve date pickers with better library
 
 ## API Endpoints
 - `/api/auth/*` - signup, login, change-password, me
@@ -51,19 +60,20 @@ Build a professional, enterprise-grade, multi-tenant SaaS Task Management Web Ap
 - `/api/notifications/*` - list, unread-count, mark-read
 - `/api/calendar/events` - tasks + meetings in date range
 - `/api/reports/*` - overdue-tasks, task-aging, user-productivity, department-performance, project-progress
+- `/api/superadmin/*` - dashboard, organizations CRUD
 
 ## Test Credentials
 - Admin: admin@democorp.com / Admin@123 (role: owner)
-- Manager: john@democorp.com / Pass@1234 (role: manager)
+- Super Admin: superadmin@taskflow.com / SuperAdmin@123
 - Org: Demo Corp
 
 ## Database
 PostgreSQL 15 on localhost:5432
 - DB: taskmanagement, User: taskadmin, Pass: taskpass123
-- Tables: organizations, users, tasks, task_comments, task_attachments, task_activities, meetings, meeting_members, meeting_updates, meeting_mom, projects, project_members, project_updates, notifications, companies, locations, departments, designations, password_reset_tokens
+- NOTE: PostgreSQL is NOT persistent in preview env - may need re-init on restart
 
 ## Architecture Notes
 - FastAPI proxy on port 8001 starts PostgreSQL and Node.js as subprocess
 - Node.js Express on port 8002
-- Angular 21 on port 3000
+- Angular 21 production build served by Express static server on port 3000
 - Kubernetes ingress routes /api/* to 8001, everything else to 3000
