@@ -8,3 +8,11 @@
 .sortable-col:hover { color: var(--primary); }
 .sort-icon { font-size: 0.7rem; opacity: 0.4; margin-left: 2px; display: inline-block; }
 .sortable-col:hover .sort-icon { opacity: 0.8; }
+.group-toggle {
+  display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.85rem;
+  input { cursor: pointer; }
+}
+.subtask-row {
+  background: var(--bg-secondary);
+  td { font-size: 0.8rem; }
+}

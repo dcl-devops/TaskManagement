@@ -1,123 +1,104 @@
 .dashboard-page { padding: 0; }
 
+.year-filter {
+  padding: 0.4rem 0.75rem; border-radius: var(--radius-md);
+  border: 1px solid var(--border-color); background: var(--bg-secondary);
+  color: var(--text-primary); font-size: 0.875rem; cursor: pointer;
+}
+
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem;
+  @media (min-width: 768px) { grid-template-columns: repeat(3, 1fr); }
   @media (min-width: 1200px) { grid-template-columns: repeat(6, 1fr); }
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  @media (max-width: 1200px) { grid-template-columns: 1fr; }
+.stat-card {
+  background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+  padding: 1rem; cursor: pointer; transition: all var(--transition);
+  display: flex; gap: 0.75rem; align-items: flex-start;
+  &:hover { border-color: var(--accent-blue); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border-color);
-  h3 { font-size: 1rem; font-weight: 600; }
+.stat-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-md); display: flex;
+  align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
+}
+.proj-icon { background: #f5f3ff; color: #8b5cf6; }
+.mtg-icon { background: #f0f9ff; color: #0ea5e9; }
+.task-icon { background: #eff6ff; color: #2563eb; }
+.due-icon { background: #fef2f2; color: #ef4444; }
+
+.stat-content { min-width: 0; }
+.stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.02em; }
+.stat-value { font-size: 1.5rem; font-weight: 700; font-family: 'Manrope', sans-serif; line-height: 1.2; }
+.stat-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+.chart-card {
+  flex-direction: column; padding: 0.75rem; cursor: default;
+  &:hover { transform: none; }
+}
+.chart-title { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem; text-transform: uppercase; }
+.chart-wrap { height: 90px; width: 100%; }
+
+/* Middle Row */
+.mid-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
 }
 
-.card-body { padding: 1rem 1.25rem; }
-
-.recent-tasks-card {
-  grid-column: 1 / -1;
+.compact-card { }
+.compact-body { padding: 0.5rem 1rem; }
+.compact-row {
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0;
+  cursor: pointer; border-radius: var(--radius-sm);
+  &:hover { background: var(--bg-hover); }
 }
-
-.priority-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  &:hover { background: var(--bg-hover); padding-left: 0.5rem; }
-  transition: all var(--transition);
-}
-
-.priority-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 90px;
-  .priority-label { font-size: 0.875rem; font-weight: 500; }
-}
-
-.priority-bar-wrap {
-  flex: 1;
-  height: 6px;
-  background: var(--bg-tertiary);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.priority-bar {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.5s ease;
-  min-width: 2px;
+.compact-label { font-size: 0.8rem; font-weight: 500; width: 65px; }
+.compact-bar-wrap { flex: 1; height: 5px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; }
+.compact-bar {
+  height: 100%; border-radius: 3px; transition: width 0.5s ease; min-width: 2px;
   &.bar-critical { background: var(--priority-critical); }
   &.bar-high { background: var(--priority-high); }
   &.bar-medium { background: var(--priority-medium); }
   &.bar-low { background: var(--priority-low); }
 }
+.compact-count { font-size: 0.8rem; font-weight: 600; width: 24px; text-align: right; }
+.sm-badge { font-size: 0.7rem !important; padding: 0.15rem 0.5rem !important; }
 
-.priority-count { font-size: 0.875rem; font-weight: 600; width: 28px; text-align: right; }
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);
+  h3 { font-size: 0.9rem; font-weight: 600; }
+}
+.card-body { padding: 0.75rem 1rem; }
 
-.status-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  &:hover { background: var(--bg-hover); padding: 0.5rem; }
-  transition: all var(--transition);
+/* Pinned Tasks */
+.pinned-card { margin-bottom: 1.25rem; }
+.empty-cell { text-align: center; color: var(--text-muted); padding: 1.5rem; }
+
+/* Bottom Row */
+.bottom-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
 }
 
-.status-count { font-size: 1.25rem; font-family: 'Manrope', sans-serif; }
-
-.empty-cell { text-align: center; color: var(--text-muted); padding: 2rem; }
-
-.team-card { grid-column: 1 / -1; }
-
 .team-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0;
   border-bottom: 1px solid var(--border-color);
   &:last-child { border-bottom: none; }
 }
+.team-info { display: flex; flex-direction: column; min-width: 120px; }
+.team-bar-wrap { flex: 1; height: 4px; background: var(--bg-tertiary); border-radius: 2px; overflow: hidden; }
+.team-bar { height: 100%; background: var(--accent-blue); border-radius: 2px; transition: width 0.5s ease; min-width: 2px; }
 
-.team-member-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 150px;
+/* Today's Meetings */
+.today-mtg-row {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--bg-hover); }
 }
-
-.team-bar-wrap {
-  flex: 1;
-  height: 4px;
-  background: var(--bg-tertiary);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.team-bar {
-  height: 100%;
-  background: var(--accent-blue);
-  border-radius: 2px;
-  transition: width 0.5s ease;
-  min-width: 2px;
-}
-
-.team-count { width: 28px; text-align: right; }
+.mtg-time { font-size: 0.8rem; font-weight: 600; color: var(--accent-blue); min-width: 55px; }
+.mtg-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 
 .text-danger { color: #ef4444 !important; }

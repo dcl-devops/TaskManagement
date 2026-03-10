@@ -123,7 +123,7 @@
             <div *ngIf="subtasks.length === 0" class="empty-state" style="padding:2rem;"><p>No subtasks</p></div>
           </div>
           <div style="padding:1rem;">
-            <a [routerLink]="['/tasks/new']" [queryParams]="{parent: taskId, category: 'subtask'}" class="btn btn-secondary btn-sm">+ Add Subtask</a>
+            <a [routerLink]="['/tasks/new']" [queryParams]="{parent: taskId, category: 'subtask', project: task.project_id, meeting: task.meeting_id}" class="btn btn-secondary btn-sm" data-testid="add-subtask-btn">+ Add Subtask</a>
           </div>
         </div>
 
@@ -192,13 +192,13 @@
             <span class="detail-label">Est. Effort</span>
             <span class="detail-value">{{ task.estimated_effort }}h</span>
           </div>
-          <div class="detail-row" *ngIf="task.meeting_title">
-            <span class="detail-label">Meeting</span>
-            <span class="detail-value">{{ task.meeting_title }}</span>
-          </div>
           <div class="detail-row" *ngIf="task.project_title">
             <span class="detail-label">Project</span>
-            <span class="detail-value">{{ task.project_title }}</span>
+            <a [routerLink]="['/projects', task.project_id]" class="detail-value" style="color:var(--accent-blue);">{{ task.project_title }}</a>
+          </div>
+          <div class="detail-row" *ngIf="task.meeting_title">
+            <span class="detail-label">Meeting</span>
+            <a [routerLink]="['/meetings', task.meeting_id]" class="detail-value" style="color:var(--accent-blue);">{{ task.meeting_title }}</a>
           </div>
           <div class="detail-row" *ngIf="task.parent_task_title">
             <span class="detail-label">Parent Task</span>

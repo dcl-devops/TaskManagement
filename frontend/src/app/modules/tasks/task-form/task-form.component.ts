@@ -22,6 +22,8 @@ export class TaskFormComponent implements OnInit {
   meetings: any[] = [];
   projects: any[] = [];
   tasks: any[] = [];
+  parentProjectName = '';
+  parentMeetingName = '';
 
   constructor(
     private fb: FormBuilder,
@@ -64,6 +66,13 @@ export class TaskFormComponent implements OnInit {
     if (qp['project']) {
       this.form.patchValue({ category: 'project', project_id: parseInt(qp['project']) });
     }
+    // Auto-fill for subtask creation
+    if (qp['parent']) {
+      this.form.patchValue({ category: 'subtask', parent_task_id: parseInt(qp['parent']) });
+    }
+    if (qp['category']) {
+      this.form.patchValue({ category: qp['category'] });
+    }
 
     // Default assigned_by = current user
     if (!this.editId && this.auth.currentUser) {
@@ -84,9 +93,37 @@ export class TaskFormComponent implements OnInit {
     this.http.get<any>('/api/admin/users').subscribe({ next: r => { this.users = r.users || r; this.cdr.detectChanges(); } });
     this.http.get<any[]>('/api/admin/departments').subscribe({ next: r => { this.departments = r; this.cdr.detectChanges(); } });
     this.http.get<any[]>('/api/admin/locations').subscribe({ next: r => { this.locations = r; this.cdr.detectChanges(); } });
-    this.http.get<any[]>('/api/meetings').subscribe({ next: r => { this.meetings = r; this.cdr.detectChanges(); } });
-    this.http.get<any[]>('/api/projects').subscribe({ next: r => { this.projects = r; this.cdr.detectChanges(); } });
-    this.http.get<any[]>('/api/tasks').subscribe({ next: r => { this.tasks = r; this.cdr.detectChanges(); } });
+    this.http.get<any[]>('/api/meetings').subscribe({ next: r => {
+      this.meetings = r;
+      const qp = this.route.snapshot.queryParams;
+      if (qp['meeting']) {
+        const mtg = r.find((m: any) => m.id == qp['meeting']);
+        if (mtg) this.parentMeetingName = mtg.title;
+      }
+      this.cdr.detectChanges();
+    } });
+    this.http.get<any[]>('/api/projects').subscribe({ next: r => {
+      this.projects = r;
+      const qp = this.route.snapshot.queryParams;
+      if (qp['project']) {
+        const prj = r.find((p: any) => p.id == qp['project']);
+        if (prj) this.parentProjectName = prj.title;
+      }
+      this.cdr.detectChanges();
+    } });
+    this.http.get<any[]>('/api/tasks').subscribe({ next: r => {
+      this.tasks = r;
+      // If creating subtask, resolve parent task's project/meeting
+      const qp = this.route.snapshot.queryParams;
+      if (qp['parent']) {
+        const parent = r.find((t: any) => t.id == qp['parent']);
+        if (parent) {
+          if (parent.project_title) this.parentProjectName = parent.project_title;
+          if (parent.meeting_title) this.parentMeetingName = parent.meeting_title;
+        }
+      }
+      this.cdr.detectChanges();
+    } });
   }
 
   loadTask(): void {

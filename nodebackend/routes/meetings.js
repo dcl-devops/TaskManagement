@@ -9,6 +9,8 @@ const MTG_SELECT = `SELECT m.*,
   u.name as owner_name, l.name as location_name,
   cb.name as created_by_name, p.title as project_title,
   (SELECT COUNT(*) FROM tasks t WHERE t.meeting_id = m.id) as task_count,
+  (SELECT COUNT(*) FROM tasks t WHERE t.meeting_id = m.id AND t.status IN ('resolved','closed')) as completed_tasks,
+  (SELECT COUNT(*) FROM tasks t WHERE t.meeting_id = m.id AND t.status NOT IN ('resolved','closed')) as pending_tasks,
   (SELECT COUNT(*) FROM meeting_members mm WHERE mm.meeting_id = m.id) as member_count
   FROM meetings m
   LEFT JOIN users u ON u.id = m.owner_id

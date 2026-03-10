@@ -11,8 +11,11 @@ import { AuthService } from '../../../core/auth.service';
 })
 export class TaskListComponent implements OnInit {
   tasks: any[] = [];
+  displayTasks: any[] = [];
+  groupedTasks: { task: any; subtasks: any[] }[] = [];
   loading = false;
-  filters: any = { status: '', priority: '', category: '', search: '', assigned_to: '', assigned_by: '', meeting_id: '', project_id: '' };
+  groupSubtasks = false;
+  filters: any = { status: '', priority: '', category: '', search: '', assigned_to: '', meeting_id: '', project_id: '' };
   sortCol = '';
   sortDir: 'asc' | 'desc' = 'asc';
   users: any[] = [];
@@ -22,13 +25,20 @@ export class TaskListComponent implements OnInit {
   private statusOrder: Record<string, number> = { open: 0, in_progress: 1, on_hold: 2, resolved: 3, closed: 4 };
 
   constructor(
-    private http: HttpClient,
-    private router: Router,
-    private route: ActivatedRoute,
-    public auth: AuthService
-  , private cdr: ChangeDetectorRef) {}
+    private http: HttpClient, private router: Router,
+    private route: ActivatedRoute, public auth: AuthService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
+    // Restore sort from localStorage
+    const saved = localStorage.getItem('task_sort');
+    if (saved) {
+      const s = JSON.parse(saved);
+      this.sortCol = s.col || '';
+      this.sortDir = s.dir || 'asc';
+    }
+    this.groupSubtasks = localStorage.getItem('task_group_subtasks') === 'true';
     this.loadDropdowns();
     this.route.queryParams.subscribe(params => {
       if (params['status']) this.filters.status = params['status'];
@@ -45,18 +55,41 @@ export class TaskListComponent implements OnInit {
   loadTasks(): void {
     this.loading = true;
     const params: any = {};
-    if (this.filters.status) params['status'] = this.filters.status;
-    if (this.filters.priority) params['priority'] = this.filters.priority;
-    if (this.filters.category) params['category'] = this.filters.category;
-    if (this.filters.search) params['search'] = this.filters.search;
-    if (this.filters.assigned_to) params['assigned_to'] = this.filters.assigned_to;
-    if (this.filters.assigned_by) params['assigned_by'] = this.filters.assigned_by;
-    if (this.filters.meeting_id) params['meeting_id'] = this.filters.meeting_id;
-    if (this.filters.project_id) params['project_id'] = this.filters.project_id;
+    Object.keys(this.filters).forEach(k => { if (this.filters[k]) params[k] = this.filters[k]; });
     this.http.get<any[]>('/api/tasks', { params }).subscribe({
-      next: data => { this.tasks = data; this.loading = false; this.cdr.detectChanges(); },
+      next: data => {
+        this.tasks = data;
+        this.applySort();
+        this.buildDisplay();
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
       error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
+  }
+
+  buildDisplay(): void {
+    this.displayTasks = [...this.tasks];
+    if (this.groupSubtasks) {
+      const parentMap = new Map<number, any[]>();
+      const parents: any[] = [];
+      const subtasks = this.tasks.filter(t => t.parent_task_id);
+      const topLevel = this.tasks.filter(t => !t.parent_task_id);
+      subtasks.forEach(s => {
+        if (!parentMap.has(s.parent_task_id)) parentMap.set(s.parent_task_id, []);
+        parentMap.get(s.parent_task_id)!.push(s);
+      });
+      this.groupedTasks = topLevel.map(t => ({
+        task: t,
+        subtasks: parentMap.get(t.id) || []
+      }));
+    }
+  }
+
+  onGroupToggle(): void {
+    localStorage.setItem('task_group_subtasks', String(this.groupSubtasks));
+    this.buildDisplay();
+    this.cdr.detectChanges();
   }
 
   togglePin(task: any, event: Event): void {
@@ -76,7 +109,9 @@ export class TaskListComponent implements OnInit {
       this.sortCol = col;
       this.sortDir = 'asc';
     }
+    localStorage.setItem('task_sort', JSON.stringify({ col: this.sortCol, dir: this.sortDir }));
     this.applySort();
+    this.buildDisplay();
     this.cdr.detectChanges();
   }
 
@@ -86,11 +121,8 @@ export class TaskListComponent implements OnInit {
       let va = this.getSortValue(a, this.sortCol);
       let vb = this.getSortValue(b, this.sortCol);
       let cmp = 0;
-      if (typeof va === 'number' && typeof vb === 'number') {
-        cmp = va - vb;
-      } else {
-        cmp = String(va || '').localeCompare(String(vb || ''));
-      }
+      if (typeof va === 'number' && typeof vb === 'number') { cmp = va - vb; }
+      else { cmp = String(va || '').localeCompare(String(vb || '')); }
       return this.sortDir === 'asc' ? cmp : -cmp;
     });
   }
@@ -101,12 +133,9 @@ export class TaskListComponent implements OnInit {
       case 'title': return task.title || '';
       case 'category': return task.category || '';
       case 'assigned_to': return task.assigned_to_name || '';
-      case 'assigned_by': return task.assigned_by_name || '';
-      case 'department': return task.department_name || '';
       case 'priority': return this.priorityOrder[task.priority] ?? 99;
       case 'status': return this.statusOrder[task.status] ?? 99;
       case 'due_date': return task.due_date ? new Date(task.due_date).getTime() : Infinity;
-      case 'updated_at': return task.updated_at ? new Date(task.updated_at).getTime() : 0;
       default: return '';
     }
   }
@@ -114,6 +143,12 @@ export class TaskListComponent implements OnInit {
   getSortIcon(col: string): string {
     if (this.sortCol !== col) return '⇅';
     return this.sortDir === 'asc' ? '↑' : '↓';
+  }
+
+  getOverdueDays(task: any): number {
+    if (!task.due_date || ['resolved', 'closed'].includes(task.status)) return 0;
+    const diff = Math.floor((Date.now() - new Date(task.due_date).getTime()) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
   }
 
   getStatusClass(s: string): string {
@@ -133,7 +168,7 @@ export class TaskListComponent implements OnInit {
   }
 
   clearFilters(): void {
-    this.filters = { status: '', priority: '', category: '', search: '', assigned_to: '', assigned_by: '', meeting_id: '', project_id: '' };
+    this.filters = { status: '', priority: '', category: '', search: '', assigned_to: '', meeting_id: '', project_id: '' };
     this.loadTasks();
   }
 }

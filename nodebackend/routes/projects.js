@@ -8,9 +8,12 @@ function cleanInt(v) { if (v === null || v === undefined || v === '' || v === 'n
 const PRJ_SELECT = `SELECT p.*, 
   u.name as owner_name, d.name as department_name, l.name as location_name,
   cb.name as created_by_name,
-  (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id) as total_tasks,
-  (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.status IN ('resolved','closed')) as completed_tasks,
-  (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.due_date < CURRENT_DATE AND t.status NOT IN ('resolved','closed')) as overdue_tasks,
+  (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id OR t.meeting_id IN (SELECT mm.id FROM meetings mm WHERE mm.project_id = p.id)) as total_tasks,
+  (SELECT COUNT(*) FROM tasks t WHERE (t.project_id = p.id OR t.meeting_id IN (SELECT mm.id FROM meetings mm WHERE mm.project_id = p.id)) AND t.status IN ('resolved','closed')) as completed_tasks,
+  (SELECT COUNT(*) FROM tasks t WHERE (t.project_id = p.id OR t.meeting_id IN (SELECT mm.id FROM meetings mm WHERE mm.project_id = p.id)) AND t.status NOT IN ('resolved','closed')) as pending_tasks,
+  (SELECT COUNT(*) FROM meetings m WHERE m.project_id = p.id) as total_meetings,
+  (SELECT COUNT(*) FROM meetings m WHERE m.project_id = p.id AND m.status = 'closed') as completed_meetings,
+  (SELECT COUNT(*) FROM meetings m WHERE m.project_id = p.id AND m.status != 'closed') as pending_meetings,
   (SELECT COUNT(*) FROM project_members pm WHERE pm.project_id = p.id) as member_count
   FROM projects p
   LEFT JOIN users u ON u.id = p.owner_id
@@ -44,13 +47,28 @@ router.get('/:id', requireAuth, async (req, res) => {
     );
     project.members = members.rows;
     const meetings = await pool.query(
-      `SELECT m.id, m.meeting_number, m.title, m.meeting_date, m.status FROM meetings m WHERE m.project_id = $1 ORDER BY m.meeting_date DESC`,
+      `SELECT m.id, m.meeting_number, m.title, m.meeting_date, m.status,
+        (SELECT COUNT(*) FROM tasks t WHERE t.meeting_id = m.id) as task_count
+       FROM meetings m WHERE m.project_id = $1 ORDER BY m.meeting_date DESC`,
       [req.params.id]
     );
     project.meetings = meetings.rows;
-    project.progress = project.total_tasks > 0 ? Math.round((project.completed_tasks / project.total_tasks) * 100) : 0;
+    // All tasks: direct project tasks + tasks from project's meetings
+    const allTasks = await pool.query(
+      `SELECT t.id, t.task_number, t.title, t.priority, t.status, t.due_date, t.category,
+        t.meeting_id, t.project_id, t.parent_task_id,
+        at2.name as assigned_to_name, m.title as meeting_title
+       FROM tasks t
+       LEFT JOIN users at2 ON at2.id = t.assigned_to
+       LEFT JOIN meetings m ON m.id = t.meeting_id
+       WHERE t.org_id = $1 AND (t.project_id = $2 OR t.meeting_id IN (SELECT mm.id FROM meetings mm WHERE mm.project_id = $2))
+       ORDER BY t.created_at DESC`,
+      [req.user.org_id, req.params.id]
+    );
+    project.all_tasks = allTasks.rows;
+    project.progress = parseInt(project.total_tasks) > 0 ? Math.round((parseInt(project.completed_tasks) / parseInt(project.total_tasks)) * 100) : 0;
     res.json(project);
-  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+  } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
 });
 
 router.post('/', requireAuth, async (req, res) => {

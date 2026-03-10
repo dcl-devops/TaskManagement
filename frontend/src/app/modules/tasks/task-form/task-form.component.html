@@ -1,5 +1,9 @@
 <div class="page-header">
-  <h1>{{ editId ? 'Edit Task' : 'New Task' }}</h1>
+  <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+    <h1>{{ editId ? 'Edit Task' : 'New Task' }}</h1>
+    <span class="text-sm text-muted" *ngIf="parentProjectName">Project: {{ parentProjectName }}</span>
+    <span class="text-sm text-muted" *ngIf="parentMeetingName">Meeting: {{ parentMeetingName }}</span>
+  </div>
   <div class="header-actions">
     <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
     <button class="btn btn-primary" (click)="save()" [disabled]="saving" data-testid="save-task-btn">

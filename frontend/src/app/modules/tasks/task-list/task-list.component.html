@@ -2,6 +2,10 @@
   <h1>Task Management</h1>
   <div class="header-actions">
     <span class="text-sm text-muted">{{ tasks.length }} tasks</span>
+    <label class="group-toggle" data-testid="group-subtask-toggle">
+      <input type="checkbox" [(ngModel)]="groupSubtasks" (change)="onGroupToggle()" />
+      <span class="text-sm">Group Sub-tasks</span>
+    </label>
     <button class="btn btn-primary" (click)="newTask()" data-testid="new-task-btn">+ New Task</button>
   </div>
 </div>
@@ -39,17 +43,13 @@
       <option value="">Assigned To</option>
       <option *ngFor="let u of users" [value]="u.id">{{ u.name }}</option>
     </select>
-    <select [(ngModel)]="filters.assigned_by" (change)="loadTasks()" data-testid="filter-assigned-by">
-      <option value="">Assigned By</option>
-      <option *ngFor="let u of users" [value]="u.id">{{ u.name }}</option>
+    <select [(ngModel)]="filters.project_id" (change)="loadTasks()" data-testid="filter-project">
+      <option value="">All Projects</option>
+      <option *ngFor="let p of projects" [value]="p.id">{{ p.title }}</option>
     </select>
     <select [(ngModel)]="filters.meeting_id" (change)="loadTasks()" data-testid="filter-meeting">
       <option value="">All Meetings</option>
       <option *ngFor="let m of meetings" [value]="m.id">{{ m.title }}</option>
-    </select>
-    <select [(ngModel)]="filters.project_id" (change)="loadTasks()" data-testid="filter-project">
-      <option value="">All Projects</option>
-      <option *ngFor="let p of projects" [value]="p.id">{{ p.title }}</option>
     </select>
     <button class="btn btn-ghost btn-sm" (click)="clearFilters()">Clear</button>
   </div>
@@ -62,48 +62,80 @@
     <thead>
       <tr>
         <th style="width:40px;">Pin</th>
-        <th class="sortable-col" (click)="sortBy('task_number')" data-testid="sort-task-number">Task # <span class="sort-icon">{{ getSortIcon('task_number') }}</span></th>
-        <th class="sortable-col" (click)="sortBy('title')" data-testid="sort-title">Title <span class="sort-icon">{{ getSortIcon('title') }}</span></th>
-        <th class="sortable-col" (click)="sortBy('category')" data-testid="sort-category">Category <span class="sort-icon">{{ getSortIcon('category') }}</span></th>
-        <th class="sortable-col" (click)="sortBy('assigned_to')" data-testid="sort-assigned-to">Assigned To <span class="sort-icon">{{ getSortIcon('assigned_to') }}</span></th>
-        <th class="sortable-col" (click)="sortBy('assigned_by')" data-testid="sort-assigned-by">Assigned By <span class="sort-icon">{{ getSortIcon('assigned_by') }}</span></th>
-        <th class="sortable-col" (click)="sortBy('department')" data-testid="sort-department">Department <span class="sort-icon">{{ getSortIcon('department') }}</span></th>
-        <th class="sortable-col" (click)="sortBy('priority')" data-testid="sort-priority">Priority <span class="sort-icon">{{ getSortIcon('priority') }}</span></th>
-        <th class="sortable-col" (click)="sortBy('status')" data-testid="sort-status">Status <span class="sort-icon">{{ getSortIcon('status') }}</span></th>
-        <th class="sortable-col" (click)="sortBy('due_date')" data-testid="sort-due-date">Due Date <span class="sort-icon">{{ getSortIcon('due_date') }}</span></th>
-        <th class="sortable-col" (click)="sortBy('updated_at')" data-testid="sort-updated">Updated <span class="sort-icon">{{ getSortIcon('updated_at') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('task_number')">Task # <span class="sort-icon">{{ getSortIcon('task_number') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('title')">Title <span class="sort-icon">{{ getSortIcon('title') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('category')">Category <span class="sort-icon">{{ getSortIcon('category') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('assigned_to')">Assigned To <span class="sort-icon">{{ getSortIcon('assigned_to') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('priority')">Priority <span class="sort-icon">{{ getSortIcon('priority') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('status')">Status <span class="sort-icon">{{ getSortIcon('status') }}</span></th>
+        <th class="sortable-col" (click)="sortBy('due_date')">Due Date <span class="sort-icon">{{ getSortIcon('due_date') }}</span></th>
+        <th>Overdue Days</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let task of tasks"
-          (click)="openTask(task.id)"
-          style="cursor:pointer;"
-          [attr.data-testid]="'task-' + task.id">
-        <td (click)="togglePin(task, $event)">
-          <span [style.opacity]="task.is_pinned ? 1 : 0.3" title="Pin task">&#128204;</span>
-        </td>
-        <td class="text-sm text-muted">{{ task.task_number }}</td>
-        <td>
-          <div style="display:flex;align-items:center;gap:0.5rem;">
-            <span class="priority-dot" [class]="task.priority"></span>
-            <span class="task-title">{{ task.title }}</span>
-          </div>
-        </td>
-        <td>
-          <span class="badge badge-category">{{ task.category | formatLabel }}</span>
-        </td>
-        <td class="text-sm">{{ task.assigned_to_name || '-' }}</td>
-        <td class="text-sm">{{ task.assigned_by_name || '-' }}</td>
-        <td class="text-sm">{{ task.department_name || '-' }}</td>
-        <td><span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | formatLabel }}</span></td>
-        <td><span class="badge" [class]="getStatusClass(task.status)">{{ task.status | formatLabel }}</span></td>
-        <td class="text-sm" [class.text-danger]="isOverdue(task.due_date, task.status)">
-          {{ formatDate(task.due_date) }}
-        </td>
-        <td class="text-sm text-muted">{{ formatDate(task.updated_at) }}</td>
-      </tr>
-      <tr *ngIf="tasks.length === 0">
-        <td colspan="11">
+      <ng-container *ngIf="!groupSubtasks">
+        <tr *ngFor="let task of displayTasks"
+            (click)="openTask(task.id)" style="cursor:pointer;" [attr.data-testid]="'task-' + task.id">
+          <td (click)="togglePin(task, $event)">
+            <span [style.opacity]="task.is_pinned ? 1 : 0.3" title="Pin task">&#128204;</span>
+          </td>
+          <td class="text-sm text-muted">{{ task.task_number }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span class="priority-dot" [class]="task.priority"></span>
+              <span class="task-title">{{ task.title }}</span>
+            </div>
+          </td>
+          <td><span class="badge badge-category">{{ task.category | formatLabel }}</span></td>
+          <td class="text-sm">{{ task.assigned_to_name || '-' }}</td>
+          <td><span class="badge" [class]="getPriorityClass(task.priority)">{{ task.priority | formatLabel }}</span></td>
+          <td><span class="badge" [class]="getStatusClass(task.status)">{{ task.status | formatLabel }}</span></td>
+          <td class="text-sm" [class.text-danger]="isOverdue(task.due_date, task.status)">{{ formatDate(task.due_date) }}</td>
+          <td class="text-sm" [class.text-danger]="getOverdueDays(task) > 0">{{ getOverdueDays(task) > 0 ? getOverdueDays(task) + 'd' : '' }}</td>
+        </tr>
+      </ng-container>
+      <ng-container *ngIf="groupSubtasks">
+        <ng-container *ngFor="let group of groupedTasks">
+          <tr (click)="openTask(group.task.id)" style="cursor:pointer;font-weight:500;" [attr.data-testid]="'task-' + group.task.id">
+            <td (click)="togglePin(group.task, $event)">
+              <span [style.opacity]="group.task.is_pinned ? 1 : 0.3">&#128204;</span>
+            </td>
+            <td class="text-sm text-muted">{{ group.task.task_number }}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <span class="priority-dot" [class]="group.task.priority"></span>
+                <span>{{ group.task.title }}</span>
+                <span class="text-xs text-muted" *ngIf="group.subtasks.length">({{ group.subtasks.length }} subtask{{ group.subtasks.length > 1 ? 's' : '' }})</span>
+              </div>
+            </td>
+            <td><span class="badge badge-category">{{ group.task.category | formatLabel }}</span></td>
+            <td class="text-sm">{{ group.task.assigned_to_name || '-' }}</td>
+            <td><span class="badge" [class]="getPriorityClass(group.task.priority)">{{ group.task.priority | formatLabel }}</span></td>
+            <td><span class="badge" [class]="getStatusClass(group.task.status)">{{ group.task.status | formatLabel }}</span></td>
+            <td class="text-sm" [class.text-danger]="isOverdue(group.task.due_date, group.task.status)">{{ formatDate(group.task.due_date) }}</td>
+            <td class="text-sm" [class.text-danger]="getOverdueDays(group.task) > 0">{{ getOverdueDays(group.task) > 0 ? getOverdueDays(group.task) + 'd' : '' }}</td>
+          </tr>
+          <tr *ngFor="let sub of group.subtasks" (click)="openTask(sub.id)" style="cursor:pointer;" class="subtask-row" [attr.data-testid]="'subtask-' + sub.id">
+            <td></td>
+            <td class="text-sm text-muted" style="padding-left:1.5rem;">{{ sub.task_number }}</td>
+            <td style="padding-left:2rem;">
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <span style="color:var(--text-muted);">&#8627;</span>
+                <span class="priority-dot" [class]="sub.priority"></span>
+                <span class="text-sm">{{ sub.title }}</span>
+              </div>
+            </td>
+            <td><span class="badge badge-category">subtask</span></td>
+            <td class="text-sm">{{ sub.assigned_to_name || '-' }}</td>
+            <td><span class="badge" [class]="getPriorityClass(sub.priority)">{{ sub.priority | formatLabel }}</span></td>
+            <td><span class="badge" [class]="getStatusClass(sub.status)">{{ sub.status | formatLabel }}</span></td>
+            <td class="text-sm" [class.text-danger]="isOverdue(sub.due_date, sub.status)">{{ formatDate(sub.due_date) }}</td>
+            <td class="text-sm" [class.text-danger]="getOverdueDays(sub) > 0">{{ getOverdueDays(sub) > 0 ? getOverdueDays(sub) + 'd' : '' }}</td>
+          </tr>
+        </ng-container>
+      </ng-container>
+      <tr *ngIf="displayTasks.length === 0 && !groupSubtasks">
+        <td colspan="9">
           <div class="empty-state">
             <div class="empty-icon">&#9745;</div>
             <h3>No tasks found</h3>
