@@ -34,6 +34,11 @@ router.post('/signup', async (req, res) => {
       [orgName, publicDomains.includes(domain) ? null : domain]
     );
     const orgId = orgResult.rows[0].id;
+    // Auto-create the first company with the organization name
+    await client.query(
+      'INSERT INTO companies(org_id, name) VALUES($1, $2) ON CONFLICT DO NOTHING',
+      [orgId, orgName]
+    );
     const passwordHash = await bcrypt.hash(password, 12);
     const userResult = await client.query(
       `INSERT INTO users(org_id, name, email, password_hash, mobile, role, force_password_change)

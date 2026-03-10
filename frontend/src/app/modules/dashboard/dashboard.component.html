@@ -18,8 +18,8 @@
         <div class="stat-icon proj-icon"><i class="fa fa-folder-open"></i></div>
         <div class="stat-content">
           <div class="stat-label">Projects</div>
-          <div class="stat-value">{{ stats.total_projects || 0 }}</div>
-          <div class="stat-sub">{{ stats.active_projects || 0 }} Active</div>
+          <div class="stat-value">{{ stats.active_projects || 0 }}</div>
+          <div class="stat-sub">Active of {{ stats.total_projects || 0 }} total</div>
         </div>
       </div>
       <!-- Card 2: Meetings -->
@@ -27,8 +27,8 @@
         <div class="stat-icon mtg-icon"><i class="fa fa-calendar"></i></div>
         <div class="stat-content">
           <div class="stat-label">Meetings</div>
-          <div class="stat-value">{{ stats.total_meetings || 0 }}</div>
-          <div class="stat-sub">{{ stats.open_meetings || 0 }} Open</div>
+          <div class="stat-value">{{ stats.open_meetings || 0 }}</div>
+          <div class="stat-sub">Open of {{ stats.total_meetings || 0 }} total</div>
         </div>
       </div>
       <!-- Card 3: Open Tasks -->
@@ -109,7 +109,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let t of stats.pinned_tasks" (click)="goToTasks({id: t.id})" style="cursor:pointer;">
+            <tr *ngFor="let t of stats.pinned_tasks" (click)="openTask(t.id)" style="cursor:pointer;">
               <td class="text-sm text-muted">{{ t.task_number }}</td>
               <td><span class="priority-dot" [class]="t.priority" style="margin-right:0.5rem;"></span>{{ t.title }}</td>
               <td class="text-sm">{{ t.assigned_to_name || '-' }}</td>

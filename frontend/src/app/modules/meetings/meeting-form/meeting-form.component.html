@@ -47,7 +47,7 @@
       <div class="form-body">
         <div class="form-group">
           <label>Owner *</label>
-          <select formControlName="owner_id" data-testid="meeting-owner">
+          <select formControlName="owner_id" data-testid="meeting-owner" (change)="onOwnerChange()">
             <option [ngValue]="null">Select owner</option>
             <option *ngFor="let u of users" [ngValue]="u.id">{{ u.name }}</option>
           </select>

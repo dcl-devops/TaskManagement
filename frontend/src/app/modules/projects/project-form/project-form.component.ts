@@ -45,7 +45,7 @@ import { ToastService } from '../../../core/toast.service';
   <div class="card">
     <div style="padding:.75rem 1.25rem;font-size:.875rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-color);">Details</div>
     <div style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;">
-      <div class="form-group"><label>Owner *</label><select formControlName="owner_id"><option [ngValue]="null">Select</option><option *ngFor="let u of users" [ngValue]="u.id">{{ u.name }}</option></select></div>
+      <div class="form-group"><label>Owner *</label><select formControlName="owner_id" (change)="onOwnerChange()"><option [ngValue]="null">Select</option><option *ngFor="let u of users" [ngValue]="u.id">{{ u.name }}</option></select></div>
       <div class="form-group"><label>Department</label><select formControlName="department_id"><option [ngValue]="null">Select</option><option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option></select></div>
       <div class="form-group"><label>Location</label><select formControlName="location_id"><option [ngValue]="null">Select</option><option *ngFor="let l of locations" [ngValue]="l.id">{{ l.name }}</option></select></div>
       <div class="form-group"><label>Start Date</label><input type="date" formControlName="start_date" /></div>
@@ -120,5 +120,17 @@ export class ProjectFormComponent implements OnInit {
     const payload = { ...this.form.value, member_ids: this.selectedMembers.map(m => m.user_id) };
     const req = this.editId ? this.http.put<any>(`/api/projects/${this.editId}`, payload) : this.http.post<any>('/api/projects', payload);
     req.subscribe({ next: r => { this.toast.success('Project saved'); this.router.navigate(['/projects', r.id]); }, error: (e) => { this.toast.error(e.error?.message || 'Save failed'); this.saving = false; this.cdr.detectChanges(); } });
+  }
+
+  onOwnerChange(): void {
+    const ownerId = this.form.get('owner_id')?.value;
+    if (ownerId) {
+      const user = this.users.find(u => u.id === ownerId);
+      if (user) {
+        if (user.department_id) this.form.patchValue({ department_id: user.department_id });
+        if (user.location_id) this.form.patchValue({ location_id: user.location_id });
+        this.cdr.detectChanges();
+      }
+    }
   }
 }

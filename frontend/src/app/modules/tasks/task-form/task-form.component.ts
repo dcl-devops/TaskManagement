@@ -98,7 +98,14 @@ export class TaskFormComponent implements OnInit {
       const qp = this.route.snapshot.queryParams;
       if (qp['meeting']) {
         const mtg = r.find((m: any) => m.id == qp['meeting']);
-        if (mtg) this.parentMeetingName = mtg.title;
+        if (mtg) {
+          this.parentMeetingName = mtg.title;
+          // If meeting is linked to a project, also show project name
+          if (mtg.project_id && !this.parentProjectName) {
+            const prj = this.projects.find((p: any) => p.id == mtg.project_id);
+            if (prj) this.parentProjectName = prj.title;
+          }
+        }
       }
       this.cdr.detectChanges();
     } });

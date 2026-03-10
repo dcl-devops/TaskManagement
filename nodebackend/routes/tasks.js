@@ -44,7 +44,9 @@ const TASK_SELECT = `SELECT t.*,
   d.name as department_name, l.name as location_name,
   cb.name as created_by_name,
   pt.title as parent_task_title,
-  m.title as meeting_title, p.title as project_title
+  m.title as meeting_title, m.project_id as meeting_project_id,
+  p.title as project_title,
+  mp.title as meeting_project_title, mp.id as meeting_project_id_resolved
   FROM tasks t
   LEFT JOIN users ab ON ab.id = t.assigned_by
   LEFT JOIN users at2 ON at2.id = t.assigned_to
@@ -53,7 +55,8 @@ const TASK_SELECT = `SELECT t.*,
   LEFT JOIN users cb ON cb.id = t.created_by
   LEFT JOIN tasks pt ON pt.id = t.parent_task_id
   LEFT JOIN meetings m ON m.id = t.meeting_id
-  LEFT JOIN projects p ON p.id = t.project_id`;
+  LEFT JOIN projects p ON p.id = t.project_id
+  LEFT JOIN projects mp ON mp.id = m.project_id`;
 
 // GET /api/tasks
 router.get('/', requireAuth, async (req, res) => {

@@ -97,4 +97,15 @@ export class MeetingFormComponent implements OnInit {
       error: (err) => { this.toast.error(err.error?.message || 'Save failed'); this.saving = false; this.cdr.detectChanges(); }
     });
   }
+
+  onOwnerChange(): void {
+    const ownerId = this.form.get('owner_id')?.value;
+    if (ownerId) {
+      const user = this.users.find(u => u.id === ownerId);
+      if (user && user.location_id) {
+        this.form.patchValue({ location_id: user.location_id });
+        this.cdr.detectChanges();
+      }
+    }
+  }
 }

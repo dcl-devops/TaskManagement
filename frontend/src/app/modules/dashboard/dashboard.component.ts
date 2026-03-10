@@ -20,14 +20,14 @@ export class DashboardComponent implements OnInit {
   taskChartData: ChartConfiguration<'line'>['data'] = { labels: [], datasets: [] };
   taskChartOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } } },
+    plugins: { legend: { display: false } },
     scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } }
   };
 
   meetingChartData: ChartConfiguration<'line'>['data'] = { labels: [], datasets: [] };
   meetingChartOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } } },
+    plugins: { legend: { display: false } },
     scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } }
   };
 
@@ -76,6 +76,7 @@ export class DashboardComponent implements OnInit {
   }
 
   goToTasks(params?: any): void { this.router.navigate(['/tasks'], { queryParams: params }); }
+  openTask(id: number): void { this.router.navigate(['/tasks', id]); }
   formatDate(d: string): string { return d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '-'; }
   formatTime(d: string): string { return d ? new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''; }
   isOverdue(d: string): boolean { return d ? new Date(d) < new Date() : false; }
