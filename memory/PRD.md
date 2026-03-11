@@ -8,6 +8,29 @@
 
 ## Implemented Features
 
+### Customer Entity (Mar 11, 2026)
+- [x] Full CRUD for Customers (Code, Name, Address, City, State, Country, Industry, Contact Person, Mobile, Email, Status)
+- [x] Customer list with search, status filter, industry filter, project count
+- [x] Customer detail page showing linked Projects, Meetings, Tasks
+- [x] Customers integrated into Projects (customer_id dropdown in form)
+- [x] Customer name displayed on Project cards
+- [x] Customer-based hierarchical filtering on Projects, Meetings, Tasks pages
+- [x] Sidebar "Customers" navigation item
+
+### Project Detail Tabs (Mar 11, 2026)
+- [x] Redesigned with tabbed layout: Updates, Meetings, Tasks
+- [x] Inline update posting from Updates tab
+- [x] Customer info shown in project detail sidebar
+
+### Admin User Management Enhancements (Mar 11, 2026)
+- [x] Email field editable when editing a user (with uniqueness validation)
+- [x] Reset Password integrated into user edit modal (inline)
+
+### Shared Member Search Component (Mar 11, 2026)
+- [x] Reusable `app-member-search` component in SharedModule
+- [x] Used in both Project Form and Meeting Form
+- [x] Type-to-search with avatar display, chip-based selection
+
 ### User Validation (Mar 10, 2026)
 - [x] Email uniqueness across system (409 on duplicate)
 - [x] Mobile number uniqueness within organization (409 on duplicate)
@@ -28,19 +51,20 @@
 
 ### Dashboard
 - [x] 6 stat cards with charts (no legends), Year filter
-- [x] Pinned task click → task detail page
+- [x] Pinned task click -> task detail page
 - [x] Active/Open counts in large font
 
 ### Projects
 - [x] Sort by: Created Date, Start Date, Name, Code, Priority
-- [x] Filter by: Owner, Priority, Status
-- [x] Cards show meeting/task summary
-- [x] Detail shows all tasks including from linked meetings
+- [x] Filter by: Owner, Priority, Status, Customer
+- [x] Cards show meeting/task summary + customer name
+- [x] Detail shows all tasks including from linked meetings (tabbed UI)
 - [x] Owner auto-fills department/location
 
 ### Meetings
 - [x] Cards show task summary
 - [x] Owner auto-fills location
+- [x] Customer filter on meeting list
 
 ### Auth
 - [x] Signup auto-creates first company with org name
@@ -52,7 +76,7 @@
 - [x] Notifications, Calendar, Reports, Avatar system, Dark/Light theme
 
 ## Remaining Tasks
-- [ ] Refactor member selection into reusable component (P1)
+- [ ] Deploy to Digital Ocean (persistent DB) (P2)
 - [ ] Better date pickers (P2)
 - [ ] Email Notifications (P2)
 - [ ] PowerBI integration (P2)
@@ -64,3 +88,9 @@
 - Admin: admin@democorp.com / Admin@123
 - Super Admin: superadmin@taskflow.com / SuperAdmin@123
 - DB: taskmanagement / taskadmin / taskpass123
+
+## Key DB Tables
+- **customers:** id, org_id, customer_code, name, address, city, state, country, industry, contact_person, mobile, email, status, created_by
+- **projects:** added customer_id (FK to customers.id)
+- **tasks:** has is_pinned boolean
+- **users:** uniqueness on email, mobile (per org), employee_code (per org); is_superadmin flag
