@@ -159,6 +159,26 @@ CREATE TABLE IF NOT EXISTS meeting_mom (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS customers (
+  id SERIAL PRIMARY KEY,
+  org_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE,
+  customer_code VARCHAR(50),
+  name VARCHAR(255) NOT NULL,
+  address TEXT,
+  city VARCHAR(100),
+  state VARCHAR(100),
+  country VARCHAR(100),
+  industry VARCHAR(100),
+  contact_person VARCHAR(255),
+  mobile VARCHAR(20),
+  email VARCHAR(255),
+  status VARCHAR(10) DEFAULT 'active' CHECK (status IN ('active','inactive')),
+  created_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(org_id, customer_code)
+);
+
 CREATE TABLE IF NOT EXISTS projects (
   id SERIAL PRIMARY KEY,
   org_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE,
@@ -172,6 +192,7 @@ CREATE TABLE IF NOT EXISTS projects (
   end_date DATE,
   priority VARCHAR(10) DEFAULT 'medium' CHECK (priority IN ('critical', 'high', 'medium', 'low')),
   status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('planning', 'active', 'on_hold', 'completed', 'cancelled')),
+  customer_id INTEGER REFERENCES customers(id),
   created_by INTEGER REFERENCES users(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
