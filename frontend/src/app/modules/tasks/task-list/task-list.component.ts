@@ -18,10 +18,19 @@ export class TaskListComponent implements OnInit {
   filters: any = { status: '', priority: '', category: '', search: '', assigned_to: '', meeting_id: '', project_id: '', customer_id: '' };
   sortCol = '';
   sortDir: 'asc' | 'desc' = 'asc';
+
+  // Raw dropdown data (full lists)
+  allUsers: any[] = [];
+  allMeetings: any[] = [];
+  allProjects: any[] = [];
+  allCustomers: any[] = [];
+
+  // Filtered dropdown options (based on other filter selections)
   users: any[] = [];
   meetings: any[] = [];
   projects: any[] = [];
   customers: any[] = [];
+
   private priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
   private statusOrder: Record<string, number> = { open: 0, in_progress: 1, on_hold: 2, resolved: 3, closed: 4 };
 
@@ -32,13 +41,8 @@ export class TaskListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Restore sort from localStorage
     const saved = localStorage.getItem('task_sort');
-    if (saved) {
-      const s = JSON.parse(saved);
-      this.sortCol = s.col || '';
-      this.sortDir = s.dir || 'asc';
-    }
+    if (saved) { const s = JSON.parse(saved); this.sortCol = s.col || ''; this.sortDir = s.dir || 'asc'; }
     this.groupSubtasks = localStorage.getItem('task_group_subtasks') === 'true';
     this.loadDropdowns();
     this.route.queryParams.subscribe(params => {
@@ -48,10 +52,58 @@ export class TaskListComponent implements OnInit {
   }
 
   loadDropdowns(): void {
-    this.http.get<any>('/api/admin/users').subscribe({ next: r => { this.users = r.users || r; this.cdr.detectChanges(); } });
-    this.http.get<any[]>('/api/meetings').subscribe({ next: r => { this.meetings = r; this.cdr.detectChanges(); } });
-    this.http.get<any[]>('/api/projects').subscribe({ next: r => { this.projects = r; this.cdr.detectChanges(); } });
-    this.http.get<any[]>('/api/customers').subscribe({ next: r => { this.customers = r; this.cdr.detectChanges(); } });
+    this.http.get<any>('/api/admin/users').subscribe({ next: r => { this.allUsers = r.users || r; this.updateFilteredDropdowns(); this.cdr.detectChanges(); } });
+    this.http.get<any[]>('/api/meetings').subscribe({ next: r => { this.allMeetings = r; this.updateFilteredDropdowns(); this.cdr.detectChanges(); } });
+    this.http.get<any[]>('/api/projects').subscribe({ next: r => { this.allProjects = r; this.updateFilteredDropdowns(); this.cdr.detectChanges(); } });
+    this.http.get<any[]>('/api/customers').subscribe({ next: r => { this.allCustomers = r; this.updateFilteredDropdowns(); this.cdr.detectChanges(); } });
+  }
+
+  onFilterChange(): void {
+    this.updateFilteredDropdowns();
+    this.loadTasks();
+  }
+
+  updateFilteredDropdowns(): void {
+    let filteredProjects = [...this.allProjects];
+    let filteredMeetings = [...this.allMeetings];
+    let filteredCustomers = [...this.allCustomers];
+
+    // If customer is selected, filter projects and meetings by that customer
+    if (this.filters.customer_id) {
+      const custId = String(this.filters.customer_id);
+      filteredProjects = filteredProjects.filter(p => String(p.customer_id) === custId);
+      const projectIds = new Set(filteredProjects.map(p => p.id));
+      filteredMeetings = filteredMeetings.filter(m => projectIds.has(m.project_id));
+    }
+
+    // If project is selected, filter meetings by that project and narrow customers
+    if (this.filters.project_id) {
+      const projId = parseInt(this.filters.project_id);
+      filteredMeetings = filteredMeetings.filter(m => m.project_id === projId);
+      const proj = this.allProjects.find(p => p.id === projId);
+      if (proj?.customer_id) {
+        filteredCustomers = filteredCustomers.filter(c => c.id === proj.customer_id);
+      }
+    }
+
+    // If meeting is selected, narrow projects and customers
+    if (this.filters.meeting_id) {
+      const meetId = parseInt(this.filters.meeting_id);
+      const meet = this.allMeetings.find(m => m.id === meetId);
+      if (meet?.project_id) {
+        filteredProjects = filteredProjects.filter(p => p.id === meet.project_id);
+        const proj = this.allProjects.find(p => p.id === meet.project_id);
+        if (proj?.customer_id) {
+          filteredCustomers = filteredCustomers.filter(c => c.id === proj.customer_id);
+        }
+      }
+    }
+
+    // Filter users based on current task data (assigned users)
+    this.users = this.allUsers;
+    this.projects = filteredProjects;
+    this.meetings = filteredMeetings;
+    this.customers = filteredCustomers;
   }
 
   loadTasks(): void {
@@ -81,18 +133,10 @@ export class TaskListComponent implements OnInit {
         if (!parentMap.has(s.parent_task_id)) parentMap.set(s.parent_task_id, []);
         parentMap.get(s.parent_task_id)!.push(s);
       });
-      // For search results: if a subtask matches but its parent doesn't, still show the subtask
-      // under a "virtual" parent group
       const orphanSubtasks = subtasks.filter(s => !allTaskIds.has(s.parent_task_id));
       this.groupedTasks = [
-        ...topLevel.map(t => ({
-          task: t,
-          subtasks: parentMap.get(t.id) || []
-        })),
-        ...orphanSubtasks.map(s => ({
-          task: s,
-          subtasks: [] as any[]
-        }))
+        ...topLevel.map(t => ({ task: t, subtasks: parentMap.get(t.id) || [] })),
+        ...orphanSubtasks.map(s => ({ task: s, subtasks: [] as any[] }))
       ];
     }
   }
@@ -114,12 +158,8 @@ export class TaskListComponent implements OnInit {
   newTask(): void { this.router.navigate(['/tasks/new']); }
 
   sortBy(col: string): void {
-    if (this.sortCol === col) {
-      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortCol = col;
-      this.sortDir = 'asc';
-    }
+    if (this.sortCol === col) { this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc'; }
+    else { this.sortCol = col; this.sortDir = 'asc'; }
     localStorage.setItem('task_sort', JSON.stringify({ col: this.sortCol, dir: this.sortDir }));
     this.applySort();
     this.buildDisplay();
@@ -180,6 +220,7 @@ export class TaskListComponent implements OnInit {
 
   clearFilters(): void {
     this.filters = { status: '', priority: '', category: '', search: '', assigned_to: '', meeting_id: '', project_id: '', customer_id: '' };
+    this.updateFilteredDropdowns();
     this.loadTasks();
   }
 }

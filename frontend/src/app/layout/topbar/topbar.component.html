@@ -3,18 +3,25 @@
     <button class="btn btn-ghost btn-icon mobile-menu-btn" (click)="toggleMobileSidebar.emit()" data-testid="mobile-menu-btn">
       &#9776;
     </button>
-    <div class="search-wrapper">
+    <div class="search-wrapper" style="position:relative;">
       <span class="search-icon">&#128269;</span>
-      <input type="text" [(ngModel)]="searchQuery" placeholder="Search tasks, meetings..." data-testid="global-search" />
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search tasks, projects, meetings..."
+        data-testid="global-search" (input)="onSearch()" (focus)="showSearchResults = searchQuery.length >= 2"
+        (keydown.escape)="showSearchResults = false" />
+      <div class="search-results-dropdown" *ngIf="showSearchResults && searchResults.length > 0">
+        <div *ngFor="let r of searchResults" class="search-result-item" (click)="goToResult(r)">
+          <span class="search-result-type">{{ r.type }}</span>
+          <span class="search-result-title">{{ r.title }}</span>
+          <span class="search-result-meta text-xs text-muted">{{ r.meta }}</span>
+        </div>
+      </div>
+      <div class="search-results-dropdown" *ngIf="showSearchResults && searchQuery.length >= 2 && searchResults.length === 0 && !searching">
+        <div class="search-result-item" style="cursor:default;opacity:.6;">No results found</div>
+      </div>
     </div>
   </div>
 
   <div class="topbar-right">
-    <!-- Quick Create -->
-    <a routerLink="/tasks" [queryParams]="{new: 'true'}" class="btn btn-primary btn-sm" data-testid="quick-create-btn">
-      + New Task
-    </a>
-
     <!-- Theme Toggle -->
     <button class="btn btn-ghost btn-icon" (click)="toggleTheme()" [title]="isDark ? 'Switch to light' : 'Switch to dark'" data-testid="theme-toggle">
       {{ isDark ? '&#9728;' : '&#9790;' }}
@@ -78,4 +85,4 @@
 </header>
 
 <!-- Click outside to close -->
-<div class="click-outside" *ngIf="showNotifications || showUserMenu" (click)="closeDropdowns()"></div>
+<div class="click-outside" *ngIf="showNotifications || showUserMenu || showSearchResults" (click)="closeDropdowns()"></div>

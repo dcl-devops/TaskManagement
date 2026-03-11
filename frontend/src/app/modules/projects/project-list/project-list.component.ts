@@ -16,23 +16,23 @@ import { Router } from '@angular/router';
     <!-- Filters & Sort -->
     <div class="card filter-bar">
       <div class="filter-row">
-        <select [(ngModel)]="filterOwner" (change)="applyFilters()" data-testid="filter-owner">
-          <option value="">All Owners</option>
-          <option *ngFor="let u of owners" [value]="u">{{ u }}</option>
+        <select [(ngModel)]="filterCustomer" (change)="onFilterChange()" data-testid="filter-customer">
+          <option value="">All Customers</option>
+          <option *ngFor="let c of filteredCustomers" [value]="c.id">{{ c.name }}</option>
         </select>
-        <select [(ngModel)]="filterPriority" (change)="applyFilters()" data-testid="filter-priority">
+        <select [(ngModel)]="filterOwner" (change)="onFilterChange()" data-testid="filter-owner">
+          <option value="">All Owners</option>
+          <option *ngFor="let u of filteredOwners" [value]="u">{{ u }}</option>
+        </select>
+        <select [(ngModel)]="filterPriority" (change)="onFilterChange()" data-testid="filter-priority">
           <option value="">All Priorities</option>
           <option value="critical">Critical</option><option value="high">High</option>
           <option value="medium">Medium</option><option value="low">Low</option>
         </select>
-        <select [(ngModel)]="filterStatus" (change)="applyFilters()" data-testid="filter-status">
+        <select [(ngModel)]="filterStatus" (change)="onFilterChange()" data-testid="filter-status">
           <option value="">All Status</option>
           <option value="planning">Planning</option><option value="active">Active</option>
           <option value="on_hold">On Hold</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>
-        </select>
-        <select [(ngModel)]="filterCustomer" (change)="applyFilters()" data-testid="filter-customer">
-          <option value="">All Customers</option>
-          <option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</option>
         </select>
         <select [(ngModel)]="sortField" (change)="applyFilters()" data-testid="sort-field">
           <option value="created_at">Sort: Created Date</option>
@@ -41,7 +41,7 @@ import { Router } from '@angular/router';
           <option value="project_number">Sort: Code</option>
           <option value="priority">Sort: Priority</option>
         </select>
-        <button class="btn btn-ghost btn-sm" (click)="toggleSortDir()">{{ sortDir === 'asc' ? '↑ Asc' : '↓ Desc' }}</button>
+        <button class="btn btn-ghost btn-sm" (click)="toggleSortDir()">{{ sortDir === 'asc' ? '&#8593; Asc' : '&#8595; Desc' }}</button>
         <button class="btn btn-ghost btn-sm" (click)="clearFilters()">Clear</button>
       </div>
     </div>
@@ -54,8 +54,10 @@ import { Router } from '@angular/router';
         </div>
         <h3 class="project-title">{{ p.title }}</h3>
         <div class="project-meta">
-          <span class="text-xs text-muted">Owner: {{ p.owner_name || '-' }}</span>
-          <span class="text-xs text-muted" *ngIf="p.customer_name">Customer: {{ p.customer_name }}</span>
+          <div class="meta-info">
+            <span class="text-xs text-muted">Owner: {{ p.owner_name || '-' }}</span>
+            <span class="text-xs text-muted" *ngIf="p.customer_name">Customer: {{ p.customer_name }}</span>
+          </div>
           <span class="badge" [class]="'badge-' + p.priority">{{ p.priority | formatLabel }}</span>
         </div>
         <div class="project-progress">
@@ -92,7 +94,8 @@ import { Router } from '@angular/router';
     }
     .project-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
     .project-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .project-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .project-meta { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+    .meta-info { display: flex; flex-direction: column; gap: 0.15rem; }
     .project-progress { margin-bottom: 0.75rem; }
     .progress-bar-bg { height: 5px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
     .progress-bar-fill { height: 100%; background: var(--accent-blue); border-radius: 3px; transition: width 0.5s ease; }
@@ -107,8 +110,10 @@ import { Router } from '@angular/router';
 export class ProjectListComponent implements OnInit {
   projects: any[] = [];
   filteredProjects: any[] = [];
-  owners: string[] = [];
-  customers: any[] = [];
+  allOwners: string[] = [];
+  allCustomers: any[] = [];
+  filteredOwners: string[] = [];
+  filteredCustomers: any[] = [];
   loading = true;
   filterOwner = '';
   filterPriority = '';
@@ -120,10 +125,9 @@ export class ProjectListComponent implements OnInit {
 
   constructor(private http: HttpClient, private router: Router, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit(): void { this.loadCustomers(); this.load(); }
-
-  loadCustomers(): void {
-    this.http.get<any[]>('/api/customers').subscribe({ next: r => { this.customers = r; this.cdr.detectChanges(); } });
+  ngOnInit(): void {
+    this.http.get<any[]>('/api/customers').subscribe({ next: r => { this.allCustomers = r; this.updateFilteredDropdowns(); this.cdr.detectChanges(); } });
+    this.load();
   }
 
   load(): void {
@@ -131,13 +135,40 @@ export class ProjectListComponent implements OnInit {
     this.http.get<any[]>('/api/projects').subscribe({
       next: r => {
         this.projects = r;
-        this.owners = [...new Set(r.map(p => p.owner_name).filter(Boolean))];
+        this.allOwners = [...new Set(r.map(p => p.owner_name).filter(Boolean))];
+        this.updateFilteredDropdowns();
         this.applyFilters();
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
+  }
+
+  onFilterChange(): void {
+    this.updateFilteredDropdowns();
+    this.applyFilters();
+  }
+
+  updateFilteredDropdowns(): void {
+    let list = [...this.projects];
+
+    // Apply current filters to narrow dropdown options
+    if (this.filterCustomer) {
+      const custId = String(this.filterCustomer);
+      const custProjects = list.filter(p => String(p.customer_id) === custId);
+      this.filteredOwners = [...new Set(custProjects.map(p => p.owner_name).filter(Boolean))];
+    } else {
+      this.filteredOwners = [...this.allOwners];
+    }
+
+    if (this.filterOwner) {
+      const ownerProjects = list.filter(p => p.owner_name === this.filterOwner);
+      const custIds = new Set(ownerProjects.map(p => p.customer_id).filter(Boolean));
+      this.filteredCustomers = this.allCustomers.filter(c => custIds.has(c.id));
+    } else {
+      this.filteredCustomers = [...this.allCustomers];
+    }
   }
 
   applyFilters(): void {
@@ -162,14 +193,12 @@ export class ProjectListComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  toggleSortDir(): void {
-    this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
-    this.applyFilters();
-  }
+  toggleSortDir(): void { this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc'; this.applyFilters(); }
 
   clearFilters(): void {
     this.filterOwner = ''; this.filterPriority = ''; this.filterStatus = ''; this.filterCustomer = '';
     this.sortField = 'created_at'; this.sortDir = 'desc';
+    this.updateFilteredDropdowns();
     this.applyFilters();
   }
 

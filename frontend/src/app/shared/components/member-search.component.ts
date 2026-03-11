@@ -31,7 +31,7 @@ import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angu
     .member-search-item{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;cursor:pointer;font-size:.8125rem;}
     .member-search-item:hover{background:var(--bg-tertiary);}
     .selected-members{display:flex;flex-wrap:wrap;gap:.375rem;margin-top:.5rem;}
-    .member-chip{display:flex;align-items:center;gap:.25rem;padding:.25rem .625rem;border-radius:999px;background:var(--accent-indigo-light, #e0e7ff);color:var(--accent-indigo, #4f46e5);font-size:.75rem;font-weight:500;}
+    .member-chip{display:flex;align-items:center;gap:.25rem;padding:.25rem .625rem;border-radius:999px;background:var(--accent-blue-light, #dbeafe);color:var(--accent-blue, #2563eb);font-size:.75rem;font-weight:500;}
     .chip-remove{background:none;border:none;color:inherit;font-size:.875rem;cursor:pointer;padding:0 .125rem;line-height:1;opacity:.7;}
     .chip-remove:hover{opacity:1;}
   `]

@@ -19,6 +19,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/superadmin', require('./routes/superadmin'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/customers', require('./routes/customers'));
+app.use('/api/geography', require('./routes/geography'));
 app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/meetings', require('./routes/meetings'));
 app.use('/api/projects', require('./routes/projects'));

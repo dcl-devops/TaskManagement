@@ -15,11 +15,21 @@ import { Router } from '@angular/router';
     </div>
     <div class="card filter-bar" style="padding:0.75rem 1rem;margin-bottom:1rem;">
       <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
-        <select [(ngModel)]="filterCustomer" (change)="load()" data-testid="filter-customer" style="width:auto;min-width:150px;height:36px;">
+        <select [(ngModel)]="filterCustomer" (change)="onFilterChange()" data-testid="filter-customer" style="width:auto;min-width:150px;height:36px;">
           <option value="">All Customers</option>
-          <option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</option>
+          <option *ngFor="let c of filteredCustomers" [value]="c.id">{{ c.name }}</option>
         </select>
-        <button class="btn btn-ghost btn-sm" *ngIf="filterCustomer" (click)="filterCustomer='';load()">Clear</button>
+        <select [(ngModel)]="filterProject" (change)="onFilterChange()" data-testid="filter-project" style="width:auto;min-width:150px;height:36px;">
+          <option value="">All Projects</option>
+          <option *ngFor="let p of filteredProjects" [value]="p.id">{{ p.title }}</option>
+        </select>
+        <select [(ngModel)]="filterStatus" (change)="onFilterChange()" data-testid="filter-status" style="width:auto;min-width:130px;height:36px;">
+          <option value="">All Status</option>
+          <option value="open">Open</option>
+          <option value="closed">Closed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" (click)="clearFilters()">Clear</button>
       </div>
     </div>
     <div *ngIf="loading" class="loading-overlay"><div class="spinner"></div></div>
@@ -64,14 +74,20 @@ import { Router } from '@angular/router';
 export class MeetingListComponent implements OnInit {
   meetings: any[] = [];
   filteredMeetings: any[] = [];
-  customers: any[] = [];
+  allCustomers: any[] = [];
+  allProjects: any[] = [];
+  filteredCustomers: any[] = [];
+  filteredProjects: any[] = [];
   loading = true;
   filterCustomer = '';
+  filterProject = '';
+  filterStatus = '';
 
   constructor(private http: HttpClient, private router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.http.get<any[]>('/api/customers').subscribe({ next: r => { this.customers = r; this.cdr.detectChanges(); } });
+    this.http.get<any[]>('/api/customers').subscribe({ next: r => { this.allCustomers = r; this.updateFilteredDropdowns(); this.cdr.detectChanges(); } });
+    this.http.get<any[]>('/api/projects').subscribe({ next: r => { this.allProjects = r; this.updateFilteredDropdowns(); this.cdr.detectChanges(); } });
     this.load();
   }
 
@@ -79,10 +95,45 @@ export class MeetingListComponent implements OnInit {
     this.loading = true;
     const params: any = {};
     if (this.filterCustomer) params['customer_id'] = this.filterCustomer;
+    if (this.filterProject) params['project_id'] = this.filterProject;
+    if (this.filterStatus) params['status'] = this.filterStatus;
     this.http.get<any[]>('/api/meetings', { params }).subscribe({
       next: r => { this.meetings = r; this.filteredMeetings = r; this.loading = false; this.cdr.detectChanges(); },
       error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
+  }
+
+  onFilterChange(): void {
+    this.updateFilteredDropdowns();
+    this.load();
+  }
+
+  updateFilteredDropdowns(): void {
+    // If customer selected, narrow projects
+    if (this.filterCustomer) {
+      const custId = parseInt(this.filterCustomer);
+      this.filteredProjects = this.allProjects.filter(p => p.customer_id === custId);
+    } else {
+      this.filteredProjects = [...this.allProjects];
+    }
+
+    // If project selected, narrow customers
+    if (this.filterProject) {
+      const proj = this.allProjects.find(p => p.id === parseInt(this.filterProject));
+      if (proj?.customer_id) {
+        this.filteredCustomers = this.allCustomers.filter(c => c.id === proj.customer_id);
+      } else {
+        this.filteredCustomers = [...this.allCustomers];
+      }
+    } else {
+      this.filteredCustomers = [...this.allCustomers];
+    }
+  }
+
+  clearFilters(): void {
+    this.filterCustomer = ''; this.filterProject = ''; this.filterStatus = '';
+    this.updateFilteredDropdowns();
+    this.load();
   }
 
   open(id: number): void { this.router.navigate(['/meetings', id]); }
