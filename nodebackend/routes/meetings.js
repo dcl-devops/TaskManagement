@@ -20,9 +20,18 @@ const MTG_SELECT = `SELECT m.*,
 
 router.get('/', requireAuth, async (req, res) => {
   const { status, search, project_id } = req.query;
-  let query = MTG_SELECT + ` WHERE m.org_id = $1`;
+  const uid = req.user.id;
+  const role = req.user.role;
+  let visClause;
+  if (role === 'owner' || role === 'admin') {
+    visClause = `m.org_id = $1`;
+  } else {
+    visClause = `m.org_id = $1 AND (m.owner_id = $2 OR m.created_by = $2 OR m.id IN (SELECT mm2.meeting_id FROM meeting_members mm2 WHERE mm2.user_id = $2))`;
+  }
+  let query = MTG_SELECT + ` WHERE ` + visClause;
   const params = [req.user.org_id];
   let idx = 2;
+  if (role !== 'owner' && role !== 'admin') { params.push(uid); idx = 3; }
   if (status) { query += ` AND m.status = $${idx++}`; params.push(status); }
   if (project_id) { query += ` AND m.project_id = $${idx++}`; params.push(project_id); }
   if (search) { query += ` AND m.title ILIKE $${idx++}`; params.push(`%${search}%`); }

@@ -72,17 +72,26 @@ export class TaskListComponent implements OnInit {
     this.displayTasks = [...this.tasks];
     if (this.groupSubtasks) {
       const parentMap = new Map<number, any[]>();
-      const parents: any[] = [];
+      const allTaskIds = new Set(this.tasks.map(t => t.id));
       const subtasks = this.tasks.filter(t => t.parent_task_id);
       const topLevel = this.tasks.filter(t => !t.parent_task_id);
       subtasks.forEach(s => {
         if (!parentMap.has(s.parent_task_id)) parentMap.set(s.parent_task_id, []);
         parentMap.get(s.parent_task_id)!.push(s);
       });
-      this.groupedTasks = topLevel.map(t => ({
-        task: t,
-        subtasks: parentMap.get(t.id) || []
-      }));
+      // For search results: if a subtask matches but its parent doesn't, still show the subtask
+      // under a "virtual" parent group
+      const orphanSubtasks = subtasks.filter(s => !allTaskIds.has(s.parent_task_id));
+      this.groupedTasks = [
+        ...topLevel.map(t => ({
+          task: t,
+          subtasks: parentMap.get(t.id) || []
+        })),
+        ...orphanSubtasks.map(s => ({
+          task: s,
+          subtasks: [] as any[]
+        }))
+      ];
     }
   }
 

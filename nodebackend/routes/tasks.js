@@ -62,10 +62,24 @@ const TASK_SELECT = `SELECT t.*,
 router.get('/', requireAuth, async (req, res) => {
   const { status, priority, category, assigned_to, assigned_by, department_id, search, pinned, meeting_id, project_id, parent_task_id } = req.query;
   try {
-    const visibleIds = await getVisibleUserIds(req.user.id, req.user.org_id, req.user.role);
-    let query = TASK_SELECT + ` WHERE t.org_id = $1 AND t.assigned_to = ANY($2::int[])`;
-    const params = [req.user.org_id, visibleIds];
-    let idx = 3;
+    const uid = req.user.id;
+    const role = req.user.role;
+    let visibilityClause;
+    if (role === 'owner' || role === 'admin') {
+      visibilityClause = `t.org_id = $1`;
+    } else {
+      visibilityClause = `t.org_id = $1 AND (
+        t.created_by = $2 OR t.assigned_to = $2 OR t.assigned_by = $2
+        OR t.project_id IN (SELECT pm.project_id FROM project_members pm WHERE pm.user_id = $2)
+        OR t.project_id IN (SELECT pp.id FROM projects pp WHERE pp.owner_id = $2 OR pp.created_by = $2)
+        OR t.meeting_id IN (SELECT mm2.meeting_id FROM meeting_members mm2 WHERE mm2.user_id = $2)
+        OR t.meeting_id IN (SELECT mm3.id FROM meetings mm3 WHERE mm3.owner_id = $2 OR mm3.created_by = $2)
+      )`;
+    }
+    let query = TASK_SELECT + ` WHERE ` + visibilityClause;
+    const params = [req.user.org_id];
+    let idx = 2;
+    if (role !== 'owner' && role !== 'admin') { params.push(uid); idx = 3; }
     if (status) { query += ` AND t.status = $${idx++}`; params.push(status); }
     if (priority) { query += ` AND t.priority = $${idx++}`; params.push(priority); }
     if (category) { query += ` AND t.category = $${idx++}`; params.push(category); }
@@ -73,7 +87,11 @@ router.get('/', requireAuth, async (req, res) => {
     if (assigned_by) { query += ` AND t.assigned_by = $${idx++}`; params.push(assigned_by); }
     if (department_id) { query += ` AND t.department_id = $${idx++}`; params.push(department_id); }
     if (meeting_id) { query += ` AND t.meeting_id = $${idx++}`; params.push(meeting_id); }
-    if (project_id) { query += ` AND t.project_id = $${idx++}`; params.push(project_id); }
+    if (project_id) {
+      // Include tasks directly on project AND tasks from meetings linked to this project
+      query += ` AND (t.project_id = $${idx} OR t.meeting_id IN (SELECT mf.id FROM meetings mf WHERE mf.project_id = $${idx}))`;
+      params.push(project_id); idx++;
+    }
     if (parent_task_id) { query += ` AND t.parent_task_id = $${idx++}`; params.push(parent_task_id); }
     if (pinned === 'true') { query += ` AND t.is_pinned = true`; }
     if (search) { query += ` AND (t.title ILIKE $${idx} OR t.task_number ILIKE $${idx})`; params.push(`%${search}%`); idx++; }

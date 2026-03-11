@@ -23,9 +23,18 @@ const PRJ_SELECT = `SELECT p.*,
 
 router.get('/', requireAuth, async (req, res) => {
   const { status, priority, search } = req.query;
-  let query = PRJ_SELECT + ` WHERE p.org_id = $1`;
+  const uid = req.user.id;
+  const role = req.user.role;
+  let visClause;
+  if (role === 'owner' || role === 'admin') {
+    visClause = `p.org_id = $1`;
+  } else {
+    visClause = `p.org_id = $1 AND (p.owner_id = $2 OR p.created_by = $2 OR p.id IN (SELECT pm2.project_id FROM project_members pm2 WHERE pm2.user_id = $2))`;
+  }
+  let query = PRJ_SELECT + ` WHERE ` + visClause;
   const params = [req.user.org_id];
   let idx = 2;
+  if (role !== 'owner' && role !== 'admin') { params.push(uid); idx = 3; }
   if (status) { query += ` AND p.status = $${idx++}`; params.push(status); }
   if (priority) { query += ` AND p.priority = $${idx++}`; params.push(priority); }
   if (search) { query += ` AND p.title ILIKE $${idx++}`; params.push(`%${search}%`); }

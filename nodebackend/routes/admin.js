@@ -61,9 +61,13 @@ router.post('/users', adminOnly, async (req, res) => {
   try {
     const exists = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
     if (exists.rows.length > 0) return res.status(409).json({ message: 'Email already exists' });
+    if (mobile) {
+      const mobileExists = await pool.query('SELECT id FROM users WHERE mobile = $1 AND org_id = $2', [mobile, req.user.org_id]);
+      if (mobileExists.rows.length > 0) return res.status(409).json({ message: 'Mobile number already exists' });
+    }
     if (employee_code) {
       const codeExists = await pool.query('SELECT id FROM users WHERE employee_code = $1 AND org_id = $2', [employee_code, req.user.org_id]);
-      if (codeExists.rows.length > 0) return res.status(409).json({ message: 'Employee code already exists' });
+      if (codeExists.rows.length > 0) return res.status(409).json({ message: 'Employee code already exists in this organization' });
     }
     const hash = await bcrypt.hash(password, 12);
     const result = await pool.query(
@@ -81,6 +85,16 @@ router.put('/users/:id', adminOnly, async (req, res) => {
   const { id } = req.params;
   const { employee_code, name, mobile, company_id, location_id, department_id, designation_id, manager_id, role, status } = req.body;
   try {
+    // Validate mobile uniqueness
+    if (mobile) {
+      const mobileExists = await pool.query('SELECT id FROM users WHERE mobile = $1 AND org_id = $2 AND id != $3', [mobile, req.user.org_id, id]);
+      if (mobileExists.rows.length > 0) return res.status(409).json({ message: 'Mobile number already in use by another user' });
+    }
+    // Validate employee_code uniqueness
+    if (employee_code) {
+      const codeExists = await pool.query('SELECT id FROM users WHERE employee_code = $1 AND org_id = $2 AND id != $3', [employee_code, req.user.org_id, id]);
+      if (codeExists.rows.length > 0) return res.status(409).json({ message: 'Employee code already in use by another user' });
+    }
     const result = await pool.query(
       `UPDATE users SET employee_code=$1, name=$2, mobile=$3, company_id=$4, location_id=$5,
        department_id=$6, designation_id=$7, manager_id=$8, role=$9, status=$10, updated_at=NOW()

@@ -1,9 +1,13 @@
 <div class="page-header">
-  <h1>Task Management</h1>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <h1>Task Management</h1>
+    <span class="task-count-badge" data-testid="task-count">{{ tasks.length }}</span>
+  </div>
   <div class="header-actions">
-    <span class="text-sm text-muted">{{ tasks.length }} tasks</span>
-    <label class="group-toggle" data-testid="group-subtask-toggle">
-      <input type="checkbox" [(ngModel)]="groupSubtasks" (change)="onGroupToggle()" />
+    <label class="toggle-switch" data-testid="group-subtask-toggle">
+      <span class="toggle-track" [class.active]="groupSubtasks" (click)="groupSubtasks = !groupSubtasks; onGroupToggle()">
+        <span class="toggle-thumb"></span>
+      </span>
       <span class="text-sm">Group Sub-tasks</span>
     </label>
     <button class="btn btn-primary" (click)="newTask()" data-testid="new-task-btn">+ New Task</button>
