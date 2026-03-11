@@ -26,6 +26,7 @@ export class UsersComponent implements OnInit {
   roleFilter = '';
   statusFilter = '';
   saving = false;
+  resetPwd = '';
 
   constructor(private http: HttpClient, private fb: FormBuilder, private toast: ToastService, public auth: AuthService, private cdr: ChangeDetectorRef) {
     this.form = this.fb.group({
@@ -81,7 +82,7 @@ export class UsersComponent implements OnInit {
     this.editingUser = user;
     this.form.patchValue(user);
     this.form.get('password')?.clearValidators();
-    this.form.get('email')?.disable();
+    this.form.get('email')?.enable();
     this.showForm = true;
   }
 
@@ -110,6 +111,14 @@ export class UsersComponent implements OnInit {
     if (!pwd || pwd.length < 8) { this.toast.error('Password must be at least 8 characters'); return; }
     this.http.post(`/api/admin/users/${user.id}/reset-password`, { newPassword: pwd }).subscribe({
       next: () => this.toast.success('Password reset successfully'),
+      error: () => this.toast.error('Reset failed')
+    });
+  }
+
+  resetPasswordInline(): void {
+    if (!this.editingUser || !this.resetPwd || this.resetPwd.length < 8) return;
+    this.http.post(`/api/admin/users/${this.editingUser.id}/reset-password`, { newPassword: this.resetPwd }).subscribe({
+      next: () => { this.toast.success('Password reset successfully'); this.resetPwd = ''; this.cdr.detectChanges(); },
       error: () => this.toast.error('Reset failed')
     });
   }

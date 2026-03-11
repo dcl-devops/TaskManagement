@@ -51,6 +51,10 @@
       <option value="">All Projects</option>
       <option *ngFor="let p of projects" [value]="p.id">{{ p.title }}</option>
     </select>
+    <select [(ngModel)]="filters.customer_id" (change)="loadTasks()" data-testid="filter-customer">
+      <option value="">All Customers</option>
+      <option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</option>
+    </select>
     <select [(ngModel)]="filters.meeting_id" (change)="loadTasks()" data-testid="filter-meeting">
       <option value="">All Meetings</option>
       <option *ngFor="let m of meetings" [value]="m.id">{{ m.title }}</option>

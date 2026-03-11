@@ -7,7 +7,7 @@ function cleanInt(v) { if (v === null || v === undefined || v === '' || v === 'n
 
 const PRJ_SELECT = `SELECT p.*, 
   u.name as owner_name, d.name as department_name, l.name as location_name,
-  cb.name as created_by_name,
+  cb.name as created_by_name, cust.name as customer_name, cust.customer_code as customer_code,
   (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id OR t.meeting_id IN (SELECT mm.id FROM meetings mm WHERE mm.project_id = p.id)) as total_tasks,
   (SELECT COUNT(*) FROM tasks t WHERE (t.project_id = p.id OR t.meeting_id IN (SELECT mm.id FROM meetings mm WHERE mm.project_id = p.id)) AND t.status IN ('resolved','closed')) as completed_tasks,
   (SELECT COUNT(*) FROM tasks t WHERE (t.project_id = p.id OR t.meeting_id IN (SELECT mm.id FROM meetings mm WHERE mm.project_id = p.id)) AND t.status NOT IN ('resolved','closed')) as pending_tasks,
@@ -19,10 +19,11 @@ const PRJ_SELECT = `SELECT p.*,
   LEFT JOIN users u ON u.id = p.owner_id
   LEFT JOIN departments d ON d.id = p.department_id
   LEFT JOIN locations l ON l.id = p.location_id
-  LEFT JOIN users cb ON cb.id = p.created_by`;
+  LEFT JOIN users cb ON cb.id = p.created_by
+  LEFT JOIN customers cust ON cust.id = p.customer_id`;
 
 router.get('/', requireAuth, async (req, res) => {
-  const { status, priority, search } = req.query;
+  const { status, priority, search, customer_id } = req.query;
   const uid = req.user.id;
   const role = req.user.role;
   let visClause;
@@ -37,6 +38,7 @@ router.get('/', requireAuth, async (req, res) => {
   if (role !== 'owner' && role !== 'admin') { params.push(uid); idx = 3; }
   if (status) { query += ` AND p.status = $${idx++}`; params.push(status); }
   if (priority) { query += ` AND p.priority = $${idx++}`; params.push(priority); }
+  if (customer_id) { query += ` AND p.customer_id = $${idx++}`; params.push(customer_id); }
   if (search) { query += ` AND p.title ILIKE $${idx++}`; params.push(`%${search}%`); }
   query += ` ORDER BY p.created_at DESC`;
   try {
@@ -81,7 +83,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 router.post('/', requireAuth, async (req, res) => {
-  const { title, description, owner_id, department_id, location_id, start_date, end_date, priority, status, member_ids } = req.body;
+  const { title, description, owner_id, department_id, location_id, start_date, end_date, priority, status, member_ids, customer_id } = req.body;
   if (!title) return res.status(400).json({ message: 'Title required' });
   const client = await pool.connect();
   try {
@@ -89,11 +91,11 @@ router.post('/', requireAuth, async (req, res) => {
     const countRes = await client.query('SELECT COUNT(*) FROM projects WHERE org_id=$1', [req.user.org_id]);
     const prjNum = 'PRJ-' + String(parseInt(countRes.rows[0].count) + 1).padStart(4, '0');
     const result = await client.query(
-      `INSERT INTO projects(org_id, project_number, title, description, owner_id, department_id, location_id, start_date, end_date, priority, status, created_by)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+      `INSERT INTO projects(org_id, project_number, title, description, owner_id, department_id, location_id, start_date, end_date, priority, status, customer_id, created_by)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
       [req.user.org_id, prjNum, title, description||null, cleanInt(owner_id)||req.user.id,
        cleanInt(department_id), cleanInt(location_id), start_date||null, end_date||null,
-       priority||'medium', status||'active', req.user.id]
+       priority||'medium', status||'active', cleanInt(customer_id), req.user.id]
     );
     const project = result.rows[0];
     if (member_ids && member_ids.length > 0) {
@@ -110,16 +112,16 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
-  const { title, description, owner_id, department_id, location_id, start_date, end_date, priority, status, member_ids } = req.body;
+  const { title, description, owner_id, department_id, location_id, start_date, end_date, priority, status, member_ids, customer_id } = req.body;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const result = await client.query(
       `UPDATE projects SET title=$1, description=$2, owner_id=$3, department_id=$4, location_id=$5,
-       start_date=$6, end_date=$7, priority=$8, status=$9, updated_at=NOW()
-       WHERE id=$10 AND org_id=$11 RETURNING *`,
+       start_date=$6, end_date=$7, priority=$8, status=$9, customer_id=$10, updated_at=NOW()
+       WHERE id=$11 AND org_id=$12 RETURNING *`,
       [title, description||null, cleanInt(owner_id), cleanInt(department_id), cleanInt(location_id),
-       start_date||null, end_date||null, priority, status, req.params.id, req.user.org_id]
+       start_date||null, end_date||null, priority, status, cleanInt(customer_id), req.params.id, req.user.org_id]
     );
     if (member_ids !== undefined) {
       await client.query('DELETE FROM project_members WHERE project_id=$1', [req.params.id]);

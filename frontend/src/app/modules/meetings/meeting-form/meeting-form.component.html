@@ -21,23 +21,7 @@
       </div>
       <div class="form-group">
         <label>Members</label>
-        <div class="member-search-wrap">
-          <input type="text" [(ngModel)]="memberSearch" [ngModelOptions]="{standalone: true}" placeholder="Type to search members..." class="member-search-input" data-testid="member-search" />
-          <div class="member-search-results" *ngIf="memberSearch.length >= 1 && filteredUsers.length > 0">
-            <div *ngFor="let u of filteredUsers" class="member-search-item" (click)="addMember(u)">
-              <img *ngIf="u.avatar_url" [src]="u.avatar_url" class="avatar avatar-sm avatar-img" />
-              <div class="avatar avatar-sm" *ngIf="!u.avatar_url">{{ u.name?.charAt(0) }}</div>
-              <span class="text-sm">{{ u.name }}</span>
-              <span class="text-xs text-muted">{{ u.email }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="selected-members" *ngIf="selectedMembers.length > 0">
-          <div *ngFor="let m of selectedMembers" class="member-chip">
-            <span>{{ m.name }}</span>
-            <button class="chip-remove" (click)="removeMember(m)">&times;</button>
-          </div>
-        </div>
+        <app-member-search [users]="users" [(selected)]="selectedMembers"></app-member-search>
       </div>
     </div>
   </div>

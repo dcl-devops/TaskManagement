@@ -15,12 +15,13 @@ export class TaskListComponent implements OnInit {
   groupedTasks: { task: any; subtasks: any[] }[] = [];
   loading = false;
   groupSubtasks = false;
-  filters: any = { status: '', priority: '', category: '', search: '', assigned_to: '', meeting_id: '', project_id: '' };
+  filters: any = { status: '', priority: '', category: '', search: '', assigned_to: '', meeting_id: '', project_id: '', customer_id: '' };
   sortCol = '';
   sortDir: 'asc' | 'desc' = 'asc';
   users: any[] = [];
   meetings: any[] = [];
   projects: any[] = [];
+  customers: any[] = [];
   private priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
   private statusOrder: Record<string, number> = { open: 0, in_progress: 1, on_hold: 2, resolved: 3, closed: 4 };
 
@@ -50,6 +51,7 @@ export class TaskListComponent implements OnInit {
     this.http.get<any>('/api/admin/users').subscribe({ next: r => { this.users = r.users || r; this.cdr.detectChanges(); } });
     this.http.get<any[]>('/api/meetings').subscribe({ next: r => { this.meetings = r; this.cdr.detectChanges(); } });
     this.http.get<any[]>('/api/projects').subscribe({ next: r => { this.projects = r; this.cdr.detectChanges(); } });
+    this.http.get<any[]>('/api/customers').subscribe({ next: r => { this.customers = r; this.cdr.detectChanges(); } });
   }
 
   loadTasks(): void {
@@ -177,7 +179,7 @@ export class TaskListComponent implements OnInit {
   }
 
   clearFilters(): void {
-    this.filters = { status: '', priority: '', category: '', search: '', assigned_to: '', meeting_id: '', project_id: '' };
+    this.filters = { status: '', priority: '', category: '', search: '', assigned_to: '', meeting_id: '', project_id: '', customer_id: '' };
     this.loadTasks();
   }
 }

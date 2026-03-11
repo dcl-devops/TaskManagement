@@ -19,7 +19,7 @@ const MTG_SELECT = `SELECT m.*,
   LEFT JOIN projects p ON p.id = m.project_id`;
 
 router.get('/', requireAuth, async (req, res) => {
-  const { status, search, project_id } = req.query;
+  const { status, search, project_id, customer_id } = req.query;
   const uid = req.user.id;
   const role = req.user.role;
   let visClause;
@@ -34,6 +34,7 @@ router.get('/', requireAuth, async (req, res) => {
   if (role !== 'owner' && role !== 'admin') { params.push(uid); idx = 3; }
   if (status) { query += ` AND m.status = $${idx++}`; params.push(status); }
   if (project_id) { query += ` AND m.project_id = $${idx++}`; params.push(project_id); }
+  if (customer_id) { query += ` AND m.project_id IN (SELECT cp.id FROM projects cp WHERE cp.customer_id = $${idx++})`; params.push(customer_id); }
   if (search) { query += ` AND m.title ILIKE $${idx++}`; params.push(`%${search}%`); }
   query += ` ORDER BY m.meeting_date DESC`;
   try {

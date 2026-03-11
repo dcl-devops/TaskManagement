@@ -83,8 +83,13 @@ router.post('/users', adminOnly, async (req, res) => {
 
 router.put('/users/:id', adminOnly, async (req, res) => {
   const { id } = req.params;
-  const { employee_code, name, mobile, company_id, location_id, department_id, designation_id, manager_id, role, status } = req.body;
+  const { employee_code, name, email, mobile, company_id, location_id, department_id, designation_id, manager_id, role, status } = req.body;
   try {
+    // Validate email uniqueness if changed
+    if (email) {
+      const emailExists = await pool.query('SELECT id FROM users WHERE email = $1 AND id != $2', [email, id]);
+      if (emailExists.rows.length > 0) return res.status(409).json({ message: 'Email already in use by another user' });
+    }
     // Validate mobile uniqueness
     if (mobile) {
       const mobileExists = await pool.query('SELECT id FROM users WHERE mobile = $1 AND org_id = $2 AND id != $3', [mobile, req.user.org_id, id]);
@@ -96,10 +101,10 @@ router.put('/users/:id', adminOnly, async (req, res) => {
       if (codeExists.rows.length > 0) return res.status(409).json({ message: 'Employee code already in use by another user' });
     }
     const result = await pool.query(
-      `UPDATE users SET employee_code=$1, name=$2, mobile=$3, company_id=$4, location_id=$5,
-       department_id=$6, designation_id=$7, manager_id=$8, role=$9, status=$10, updated_at=NOW()
-       WHERE id=$11 AND org_id=$12 RETURNING id, name, email, role, status`,
-      [employee_code||null, name, mobile||null, company_id||null, location_id||null,
+      `UPDATE users SET employee_code=$1, name=$2, email=$3, mobile=$4, company_id=$5, location_id=$6,
+       department_id=$7, designation_id=$8, manager_id=$9, role=$10, status=$11, updated_at=NOW()
+       WHERE id=$12 AND org_id=$13 RETURNING id, name, email, role, status`,
+      [employee_code||null, name, email, mobile||null, company_id||null, location_id||null,
        department_id||null, designation_id||null, manager_id||null, role, status, id, req.user.org_id]
     );
     if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });

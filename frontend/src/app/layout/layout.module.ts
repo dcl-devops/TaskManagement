@@ -17,6 +17,7 @@ const routes: Routes = [
       { path: 'tasks', loadChildren: () => import('../modules/tasks/tasks.module').then(m => m.TasksModule) },
       { path: 'meetings', loadChildren: () => import('../modules/meetings/meetings.module').then(m => m.MeetingsModule) },
       { path: 'projects', loadChildren: () => import('../modules/projects/projects.module').then(m => m.ProjectsModule) },
+      { path: 'customers', loadChildren: () => import('../modules/customers/customers.module').then(m => m.CustomersModule) },
       { path: 'calendar', loadChildren: () => import('../modules/calendar/calendar.module').then(m => m.CalendarModule) },
       { path: 'reports', loadChildren: () => import('../modules/reports/reports.module').then(m => m.ReportsModule) },
       { path: 'admin', loadChildren: () => import('../modules/admin/admin.module').then(m => m.AdminModule) },

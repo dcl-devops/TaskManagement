@@ -21,6 +21,7 @@
       <div class="detail-header">Project Details</div>
       <div class="detail-list">
         <div class="detail-row"><span class="detail-label">Owner</span><span>{{ project.owner_name || '-' }}</span></div>
+        <div class="detail-row"><span class="detail-label">Customer</span><span>{{ project.customer_name || '-' }}</span></div>
         <div class="detail-row"><span class="detail-label">Department</span><span>{{ project.department_name || '-' }}</span></div>
         <div class="detail-row"><span class="detail-label">Location</span><span>{{ project.location_name || '-' }}</span></div>
         <div class="detail-row"><span class="detail-label">Start Date</span><span>{{ formatDate(project.start_date) }}</span></div>
@@ -37,16 +38,47 @@
       </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main Content with Tabs -->
     <div class="main-content">
       <!-- Description -->
       <div class="card" *ngIf="project.description" style="margin-bottom:1rem;">
         <div class="card-body"><p class="text-sm">{{ project.description }}</p></div>
       </div>
 
-      <!-- Meetings under project -->
-      <div class="card" style="margin-bottom:1rem;">
-        <div class="card-header"><h3>Meetings ({{ project.meetings?.length || 0 }})</h3></div>
+      <!-- Tab Navigation -->
+      <div class="tabs-header" style="margin-bottom:1rem;background:var(--bg-card);border-radius:var(--radius-lg);border:1px solid var(--border-color);overflow:hidden;">
+        <button class="tab-btn" [class.active]="activeTab === 'updates'" (click)="activeTab = 'updates'" data-testid="tab-updates">
+          Updates ({{ updates.length }})
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'meetings'" (click)="activeTab = 'meetings'" data-testid="tab-meetings">
+          Meetings ({{ project.meetings?.length || 0 }})
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'tasks'" (click)="activeTab = 'tasks'" data-testid="tab-tasks">
+          Tasks ({{ project.all_tasks?.length || 0 }})
+        </button>
+      </div>
+
+      <!-- Updates Tab -->
+      <div class="card" *ngIf="activeTab === 'updates'">
+        <div class="card-body">
+          <div style="display:flex;gap:0.75rem;margin-bottom:1rem;">
+            <input type="text" [(ngModel)]="newUpdate" placeholder="Add a project update..." style="flex:1;" data-testid="update-input" (keydown.enter)="postUpdate()" />
+            <button class="btn btn-primary btn-sm" (click)="postUpdate()" [disabled]="!newUpdate.trim()" data-testid="post-update-btn">Post</button>
+          </div>
+          <div class="update-item" *ngFor="let u of updates">
+            <div class="avatar avatar-sm">{{ getInitials(u.user_name) }}</div>
+            <div>
+              <span class="font-medium text-sm">{{ u.user_name }}</span>
+              <span class="text-xs text-muted"> &bull; {{ formatDate(u.created_at) }}</span>
+              <p class="text-sm" style="margin-top:0.25rem;">{{ u.remark }}</p>
+            </div>
+          </div>
+          <div *ngIf="!updates.length" class="text-sm text-muted">No updates yet</div>
+        </div>
+      </div>
+
+      <!-- Meetings Tab -->
+      <div class="card" *ngIf="activeTab === 'meetings'">
         <div class="table-container" style="border:none;">
           <table>
             <thead><tr><th>Meeting #</th><th>Title</th><th>Date</th><th>Tasks</th><th>Status</th></tr></thead>
@@ -64,12 +96,8 @@
         </div>
       </div>
 
-      <!-- All Tasks (direct + from meetings) -->
-      <div class="card" style="margin-bottom:1rem;">
-        <div class="card-header">
-          <h3>All Tasks ({{ project.all_tasks?.length || 0 }})</h3>
-          <span class="text-xs text-muted">Includes tasks from linked meetings</span>
-        </div>
+      <!-- Tasks Tab -->
+      <div class="card" *ngIf="activeTab === 'tasks'">
         <div class="table-container" style="border:none;">
           <table>
             <thead><tr><th>Task #</th><th>Title</th><th>Source</th><th>Assigned To</th><th>Priority</th><th>Due Date</th><th>Status</th></tr></thead>
@@ -89,22 +117,6 @@
               <tr *ngIf="!project.all_tasks?.length"><td colspan="7" class="text-sm text-muted" style="text-align:center;padding:1rem;">No tasks yet</td></tr>
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <!-- Updates -->
-      <div class="card">
-        <div class="card-header"><h3>Updates</h3></div>
-        <div class="card-body">
-          <div class="update-item" *ngFor="let u of updates">
-            <div class="avatar avatar-sm">{{ getInitials(u.user_name) }}</div>
-            <div>
-              <span class="font-medium text-sm">{{ u.user_name }}</span>
-              <span class="text-xs text-muted"> &bull; {{ formatDate(u.created_at) }}</span>
-              <p class="text-sm" style="margin-top:0.25rem;">{{ u.remark }}</p>
-            </div>
-          </div>
-          <div *ngIf="!updates.length" class="text-sm text-muted">No updates yet</div>
         </div>
       </div>
     </div>

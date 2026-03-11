@@ -30,6 +30,10 @@ import { Router } from '@angular/router';
           <option value="planning">Planning</option><option value="active">Active</option>
           <option value="on_hold">On Hold</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>
         </select>
+        <select [(ngModel)]="filterCustomer" (change)="applyFilters()" data-testid="filter-customer">
+          <option value="">All Customers</option>
+          <option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</option>
+        </select>
         <select [(ngModel)]="sortField" (change)="applyFilters()" data-testid="sort-field">
           <option value="created_at">Sort: Created Date</option>
           <option value="start_date">Sort: Start Date</option>
@@ -51,6 +55,7 @@ import { Router } from '@angular/router';
         <h3 class="project-title">{{ p.title }}</h3>
         <div class="project-meta">
           <span class="text-xs text-muted">Owner: {{ p.owner_name || '-' }}</span>
+          <span class="text-xs text-muted" *ngIf="p.customer_name">Customer: {{ p.customer_name }}</span>
           <span class="badge" [class]="'badge-' + p.priority">{{ p.priority | formatLabel }}</span>
         </div>
         <div class="project-progress">
@@ -103,17 +108,23 @@ export class ProjectListComponent implements OnInit {
   projects: any[] = [];
   filteredProjects: any[] = [];
   owners: string[] = [];
+  customers: any[] = [];
   loading = true;
   filterOwner = '';
   filterPriority = '';
   filterStatus = '';
+  filterCustomer = '';
   sortField = 'created_at';
   sortDir: 'asc' | 'desc' = 'desc';
   private priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
 
   constructor(private http: HttpClient, private router: Router, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void { this.loadCustomers(); this.load(); }
+
+  loadCustomers(): void {
+    this.http.get<any[]>('/api/customers').subscribe({ next: r => { this.customers = r; this.cdr.detectChanges(); } });
+  }
 
   load(): void {
     this.loading = true;
@@ -134,6 +145,7 @@ export class ProjectListComponent implements OnInit {
     if (this.filterOwner) list = list.filter(p => p.owner_name === this.filterOwner);
     if (this.filterPriority) list = list.filter(p => p.priority === this.filterPriority);
     if (this.filterStatus) list = list.filter(p => p.status === this.filterStatus);
+    if (this.filterCustomer) list = list.filter(p => String(p.customer_id) === this.filterCustomer);
     list.sort((a, b) => {
       let va: any, vb: any;
       switch (this.sortField) {
@@ -156,7 +168,7 @@ export class ProjectListComponent implements OnInit {
   }
 
   clearFilters(): void {
-    this.filterOwner = ''; this.filterPriority = ''; this.filterStatus = '';
+    this.filterOwner = ''; this.filterPriority = ''; this.filterStatus = ''; this.filterCustomer = '';
     this.sortField = 'created_at'; this.sortDir = 'desc';
     this.applyFilters();
   }

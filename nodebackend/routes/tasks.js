@@ -60,7 +60,7 @@ const TASK_SELECT = `SELECT t.*,
 
 // GET /api/tasks
 router.get('/', requireAuth, async (req, res) => {
-  const { status, priority, category, assigned_to, assigned_by, department_id, search, pinned, meeting_id, project_id, parent_task_id } = req.query;
+  const { status, priority, category, assigned_to, assigned_by, department_id, search, pinned, meeting_id, project_id, parent_task_id, customer_id } = req.query;
   try {
     const uid = req.user.id;
     const role = req.user.role;
@@ -93,6 +93,10 @@ router.get('/', requireAuth, async (req, res) => {
       params.push(project_id); idx++;
     }
     if (parent_task_id) { query += ` AND t.parent_task_id = $${idx++}`; params.push(parent_task_id); }
+    if (customer_id) {
+      query += ` AND (t.project_id IN (SELECT cp.id FROM projects cp WHERE cp.customer_id = $${idx}) OR t.meeting_id IN (SELECT cm.id FROM meetings cm WHERE cm.project_id IN (SELECT cp2.id FROM projects cp2 WHERE cp2.customer_id = $${idx})))`;
+      params.push(customer_id); idx++;
+    }
     if (pinned === 'true') { query += ` AND t.is_pinned = true`; }
     if (search) { query += ` AND (t.title ILIKE $${idx} OR t.task_number ILIKE $${idx})`; params.push(`%${search}%`); idx++; }
     query += ` ORDER BY t.is_pinned DESC, t.due_date ASC NULLS LAST, t.created_at DESC`;

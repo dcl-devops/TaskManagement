@@ -27,6 +27,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { label: 'Tasks', icon: '✓', path: '/tasks' },
     { label: 'Meetings', icon: '◆', path: '/meetings' },
     { label: 'Projects', icon: '▲', path: '/projects' },
+    { label: 'Customers', icon: '◉', path: '/customers' },
     { label: 'Calendar', icon: '▦', path: '/calendar' },
     { label: 'Reports', icon: '▬', path: '/reports' },
     { label: 'Admin', icon: '⚙', path: '/admin', adminOnly: true }
